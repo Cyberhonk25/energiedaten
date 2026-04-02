@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Energie · Warendorf</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Bebas+Neue&display=swap');
+
+:root {
+  --bg: #f0ece4;
+  --surface: #fff;
+  --border: #d4cfc6;
+  --text: #1a1814;
+  --muted: #8a857a;
+  --gas: #e85d26;
+  --water: #2680e8;
+  --strom: #f5c400;
+  --pv: #28b463;
+  --einspeisung: #1a7a44;
+  --accent: #1a1814;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.top-bar {
+  background: var(--text);
+  color: var(--bg);
+  padding: 20px 32px;
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+}
+
+.top-bar h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  letter-spacing: 2px;
+  line-height: 1;
+}
+
+.top-bar span {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.nav {
+  background: var(--text);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 0 32px;
+  display: flex;
+  gap: 0;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  color: rgba(240,236,228,0.5);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 12px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+
+.nav-btn:hover { color: var(--bg); }
+.nav-btn.active { color: var(--bg); border-bottom-color: var(--bg); }
+
+.content { padding: 32px; max-width: 1100px; }
+
+/* SECTION */
+.section { display: none; }
+.section.active { display: block; }
+
+/* PREISE */
+.preise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.preis-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 16px;
+}
+
+.preis-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+
+.preis-input-wrap { display: flex; align-items: center; gap: 6px; }
+
+.preis-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 10px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.preis-input:focus { border-color: var(--text); }
+.preis-unit { font-size: 10px; color: var(--muted); white-space: nowrap; }
+
+/* EINGABE */
+.eingabe-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.eingabe-header h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px;
+  letter-spacing: 1px;
+}
+
+.month-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+.zaehler-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.zaehler-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.zaehler-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.zaehler-card.gas::before { background: var(--gas); }
+.zaehler-card.water::before { background: var(--water); }
+.zaehler-card.strom::before { background: var(--strom); }
+.zaehler-card.pv::before { background: var(--pv); }
+
+.zaehler-title {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.zaehler-emoji { font-size: 16px; }
+
+.zaehler-inputs { display: flex; flex-direction: column; gap: 8px; }
+
+.input-row { display: flex; flex-direction: column; gap: 3px; }
+.input-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+.z-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 10px 12px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.z-input:focus { border-color: var(--text); }
+
+.z-input::placeholder { color: var(--border); font-weight: 400; }
+
+.verbrauch-preview {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px dashed var(--border);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.verbrauch-preview strong { color: var(--text); }
+
+.btn-save {
+  background: var(--text);
+  color: var(--bg);
+  border: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-save:hover { opacity: 0.8; }
+
+/* AUSWERTUNG */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-lbl { font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+.chart-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 20px;
+}
+
+.chart-title {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-wrap { position: relative; height: 220px; }
+
+/* TABELLE */
+.table-wrap { overflow-x: auto; margin-bottom: 20px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+th {
+  background: var(--text);
+  color: var(--bg);
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+tr:hover td { background: var(--bg); }
+
+.td-gas { color: var(--gas); font-weight: 600; }
+.td-water { color: var(--water); font-weight: 600; }
+.td-strom { color: #b08e00; font-weight: 600; }
+.td-pv { color: var(--pv); font-weight: 600; }
+
+.btn-export {
+  background: var(--pv);
+  color: #fff;
+  border: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-export:hover { opacity: 0.85; }
+
+.btn-delete {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  padding: 4px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-delete:hover { border-color: var(--gas); color: var(--gas); }
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.empty-state div { font-family: 'Bebas Neue'; font-size: 48px; opacity: 0.15; margin-bottom: 12px; }
+
+.year-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  padding: 6px 10px;
+  outline: none;
+  cursor: pointer;
+}
+
+.section-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 700px) {
+  .chart-grid { grid-template-columns: 1fr; }
+  .content { padding: 16px; }
+  .top-bar { padding: 16px; }
+  .top-bar h1 { font-size: 32px; }
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>ENERGIE</h1>
+  <span>Breslauer Str. 32 · Warendorf</span>
+</div>
+
+<div id="loading-bar" style="display:none;background:#f5c400;color:#1a1814;padding:8px 32px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;">Laden…</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showSection('eingabe')">Eingabe</button>
+  <button class="nav-btn" onclick="showSection('auswertung')">Auswertung</button>
+  <button class="nav-btn" onclick="showSection('preise')">Preise</button>
+</div>
+
+<div class="content">
+
+  <!-- EINGABE -->
+  <div class="section active" id="s-eingabe">
+    <div class="eingabe-header">
+      <h2>Zählerstand erfassen</h2>
+      <select class="month-select" id="monthSelect"></select>
+    </div>
+
+    <div class="zaehler-grid">
+      <div class="zaehler-card gas">
+        <div class="zaehler-title"><span class="zaehler-emoji">🔥</span> Gas</div>
+        <div class="zaehler-inputs">
+          <div class="input-row">
+            <div class="input-label">Zählerstand (m³)</div>
+            <input class="z-input" type="number" id="gas-stand" placeholder="0.000" step="0.001">
+          </div>
+        </div>
+        <div class="verbrauch-preview" id="prev-gas">Vormonat: —</div>
+      </div>
+
+      <div class="zaehler-card water">
+        <div class="zaehler-title"><span class="zaehler-emoji">💧</span> Wasser</div>
+        <div class="zaehler-inputs">
+          <div class="input-row">
+            <div class="input-label">Zählerstand (m³)</div>
+            <input class="z-input" type="number" id="water-stand" placeholder="0.000" step="0.001">
+          </div>
+        </div>
+        <div class="verbrauch-preview" id="prev-water">Vormonat: —</div>
+      </div>
+
+      <div class="zaehler-card strom">
+        <div class="zaehler-title"><span class="zaehler-emoji">⚡</span> Strom</div>
+        <div class="zaehler-inputs">
+          <div class="input-row">
+            <div class="input-label">Bezug (kWh)</div>
+            <input class="z-input" type="number" id="strom-bezug" placeholder="0.00" step="0.01">
+          </div>
+        </div>
+        <div class="verbrauch-preview" id="prev-strom">Vormonat: —</div>
+      </div>
+
+      <div class="zaehler-card pv">
+        <div class="zaehler-title"><span class="zaehler-emoji">☀️</span> PV-Anlage</div>
+        <div class="zaehler-inputs">
+          <div class="input-row">
+            <div class="input-label">Erzeugung (kWh)</div>
+            <input class="z-input" type="number" id="pv-erzeugung" placeholder="0.00" step="0.01">
+          </div>
+          <div class="input-row">
+            <div class="input-label">Einspeisung (kWh)</div>
+            <input class="z-input" type="number" id="pv-einspeisung" placeholder="0.00" step="0.01">
+          </div>
+        </div>
+        <div class="verbrauch-preview" id="prev-pv">Vormonat: —</div>
+      </div>
+    </div>
+
+    <button class="btn-save" onclick="saveEntry()">Speichern</button>
+    <div id="save-msg" style="display:none;margin-top:12px;font-size:11px;color:var(--pv);letter-spacing:1px;">✓ Gespeichert</div>
+  </div>
+
+  <!-- AUSWERTUNG -->
+  <div class="section" id="s-auswertung">
+    <div class="section-actions">
+      <select class="year-select" id="yearSelect" onchange="renderAuswertung()"></select>
+      <button class="btn-export" onclick="exportExcel()">↓ Excel Export</button>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--gas)"></span> Gas Verbrauch (m³)</div>
+        <div class="chart-wrap"><canvas id="chartGas"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--water)"></span> Wasser Verbrauch (m³)</div>
+        <div class="chart-wrap"><canvas id="chartWater"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--strom)"></span> Strom Bezug (kWh)</div>
+        <div class="chart-wrap"><canvas id="chartStrom"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--pv)"></span> PV Erzeugung vs Einspeisung (kWh)</div>
+        <div class="chart-wrap"><canvas id="chartPV"></canvas></div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>Monat</th>
+            <th>Gas Stand</th>
+            <th>Gas Verbr.</th>
+            <th>Gas €</th>
+            <th>Wasser Stand</th>
+            <th>Wasser Verbr.</th>
+            <th>Wasser €</th>
+            <th>Strom Bezug</th>
+            <th>Strom €</th>
+            <th>PV Erzeug.</th>
+            <th>PV Einsp.</th>
+            <th>PV Eigenverbr.</th>
+            <th>Einsp. €</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div>📊</div>
+      Noch keine Daten. Zählerstände eingeben und speichern.
+    </div>
+  </div>
+
+  <!-- PREISE -->
+  <div class="section" id="s-preise">
+    <div class="eingabe-header" style="margin-bottom:20px">
+      <h2>Tarife & Preise</h2>
+    </div>
+    <div class="preise-grid">
+      <div class="preis-card">
+        <div class="preis-label"><span class="dot" style="background:var(--gas)"></span> Gas</div>
+        <div class="preis-input-wrap">
+          <input class="preis-input" type="number" id="p-gas" step="0.001" placeholder="0.080">
+          <span class="preis-unit">€/m³</span>
+        </div>
+      </div>
+      <div class="preis-card">
+        <div class="preis-label"><span class="dot" style="background:var(--water)"></span> Wasser</div>
+        <div class="preis-input-wrap">
+          <input class="preis-input" type="number" id="p-water" step="0.01" placeholder="2.50">
+          <span class="preis-unit">€/m³</span>
+        </div>
+      </div>
+      <div class="preis-card">
+        <div class="preis-label"><span class="dot" style="background:var(--strom)"></span> Strom Bezug</div>
+        <div class="preis-input-wrap">
+          <input class="preis-input" type="number" id="p-strom" step="0.001" placeholder="0.32">
+          <span class="preis-unit">€/kWh</span>
+        </div>
+      </div>
+      <div class="preis-card">
+        <div class="preis-label"><span class="dot" style="background:var(--einspeisung)"></span> PV Einspeisung</div>
+        <div class="preis-input-wrap">
+          <input class="preis-input" type="number" id="p-einsp" step="0.001" placeholder="0.082">
+          <span class="preis-unit">€/kWh</span>
+        </div>
+      </div>
+    </div>
+    <button class="btn-save" onclick="savePreise()">Preise speichern</button>
+    <div id="preis-msg" style="display:none;margin-top:12px;font-size:11px;color:var(--pv);letter-spacing:1px;">✓ Gespeichert</div>
+  </div>
+
+</div>
+
+<script>
+// ── CONFIG ──
+const API = 'https://script.google.com/macros/s/AKfycbxHnKvQdihg6cz0b3RzQd1n4wY1BxmucJ9t3llaU2Iu59URvXzVRSpL8dIZzuLw89Q8GQ/exec';
+
+// ── STATE ──
+let data = [];
+let preise = { gas: 0.08, water: 2.50, strom: 0.32, einsp: 0.082 };
+let charts = {};
+
+const MONTHS = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+
+// ── API HELPERS ──
+async function apiGet(action, params = {}) {
+  const url = new URL(API);
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+  const res = await fetch(url.toString());
+  return res.json();
+}
+
+async function apiPost(action, body) {
+  const url = new URL(API);
+  url.searchParams.set('action', action);
+  const res = await fetch(url.toString(), {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
+function showLoading(msg = 'Laden…') {
+  document.getElementById('loading-bar').style.display = 'block';
+  document.getElementById('loading-bar').textContent = msg;
+}
+
+function hideLoading() {
+  document.getElementById('loading-bar').style.display = 'none';
+}
+
+// ── INIT ──
+async function init() {
+  fillMonthSelect();
+  fillYearSelect();
+  showLoading('Daten werden geladen…');
+  try {
+    const [rawData, rawPreise] = await Promise.all([
+      apiGet('getData'),
+      apiGet('getPreise'),
+    ]);
+    data = rawData.map(d => ({
+      ...d,
+      gasStand: d.gasStand !== '' && d.gasStand != null ? +d.gasStand : null,
+      waterStand: d.waterStand !== '' && d.waterStand != null ? +d.waterStand : null,
+      stromBezug: d.stromBezug !== '' && d.stromBezug != null ? +d.stromBezug : null,
+      pvErzeugung: d.pvErzeugung !== '' && d.pvErzeugung != null ? +d.pvErzeugung : null,
+      pvEinspeisung: d.pvEinspeisung !== '' && d.pvEinspeisung != null ? +d.pvEinspeisung : null,
+    }));
+    preise = rawPreise;
+  } catch(e) {
+    console.error(e);
+  }
+  hideLoading();
+  loadPreise();
+  updatePreviews();
+  renderAuswertung();
+}
+
+function fillMonthSelect() {
+  const sel = document.getElementById('monthSelect');
+  const now = new Date();
+  sel.innerHTML = '';
+  for (let y = now.getFullYear(); y >= now.getFullYear() - 3; y--) {
+    for (let m = (y === now.getFullYear() ? now.getMonth() : 11); m >= 0; m--) {
+      const opt = document.createElement('option');
+      opt.value = `${y}-${String(m+1).padStart(2,'0')}`;
+      opt.textContent = `${MONTHS[m]} ${y}`;
+      sel.appendChild(opt);
+    }
+  }
+  sel.addEventListener('change', updatePreviews);
+}
+
+function fillYearSelect() {
+  const sel = document.getElementById('yearSelect');
+  const now = new Date();
+  sel.innerHTML = '';
+  for (let y = now.getFullYear(); y >= now.getFullYear() - 5; y--) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    sel.appendChild(opt);
+  }
+}
+
+function loadPreise() {
+  document.getElementById('p-gas').value = preise.gas;
+  document.getElementById('p-water').value = preise.water;
+  document.getElementById('p-strom').value = preise.strom;
+  document.getElementById('p-einsp').value = preise.einsp;
+}
+
+async function savePreise() {
+  preise = {
+    gas: parseFloat(document.getElementById('p-gas').value) || 0,
+    water: parseFloat(document.getElementById('p-water').value) || 0,
+    strom: parseFloat(document.getElementById('p-strom').value) || 0,
+    einsp: parseFloat(document.getElementById('p-einsp').value) || 0,
+  };
+  showLoading('Preise speichern…');
+  await apiPost('savePreise', preise);
+  hideLoading();
+  const msg = document.getElementById('preis-msg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2000);
+  renderAuswertung();
+}
+
+// ── PREVIEWS ──
+function updatePreviews() {
+  const month = document.getElementById('monthSelect').value;
+  const [y, m] = month.split('-').map(Number);
+  const prevMonth = m === 1 ? `${y-1}-12` : `${y}-${String(m-1).padStart(2,'0')}`;
+  const prev = data.find(d => d.month === prevMonth);
+
+  setPreview('prev-gas', prev, 'gasStand', 'm³');
+  setPreview('prev-water', prev, 'waterStand', 'm³');
+  setPreview('prev-strom', prev, 'stromBezug', 'kWh', true);
+  setPreviewPV(prev);
+}
+
+function setPreview(id, prev, key, unit, isConsumption = false) {
+  const el = document.getElementById(id);
+  if (!prev || prev[key] == null) {
+    el.innerHTML = 'Vormonat: —';
+  } else {
+    el.innerHTML = isConsumption
+      ? `Vormonat: <strong>${Number(prev[key]).toFixed(2)} ${unit}</strong>`
+      : `Vormonat: <strong>${Number(prev[key]).toFixed(3)} ${unit}</strong>`;
+  }
+}
+
+function setPreviewPV(prev) {
+  const el = document.getElementById('prev-pv');
+  if (!prev) { el.innerHTML = 'Vormonat: —'; return; }
+  el.innerHTML = `Erzeug: <strong>${(prev.pvErzeugung||0).toFixed(1)} kWh</strong> · Einsp: <strong>${(prev.pvEinspeisung||0).toFixed(1)} kWh</strong>`;
+}
+
+// ── SAVE ENTRY ──
+async function saveEntry() {
+  const month = document.getElementById('monthSelect').value;
+  const entry = {
+    month,
+    gasStand: parseFloat(document.getElementById('gas-stand').value) || null,
+    waterStand: parseFloat(document.getElementById('water-stand').value) || null,
+    stromBezug: parseFloat(document.getElementById('strom-bezug').value) || null,
+    pvErzeugung: parseFloat(document.getElementById('pv-erzeugung').value) || null,
+    pvEinspeisung: parseFloat(document.getElementById('pv-einspeisung').value) || null,
+  };
+
+  showLoading('Speichern…');
+  await apiPost('saveEntry', entry);
+
+  // Update local cache
+  const idx = data.findIndex(d => d.month === month);
+  if (idx >= 0) data[idx] = entry;
+  else data.push(entry);
+  data.sort((a,b) => a.month.localeCompare(b.month));
+  hideLoading();
+
+  ['gas-stand','water-stand','strom-bezug','pv-erzeugung','pv-einspeisung'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+
+  const msg = document.getElementById('save-msg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2000);
+
+  updatePreviews();
+  renderAuswertung();
+}
+
+// ── AUSWERTUNG ──
+function getVerbrauch(entries, key) {
+  const result = [];
+  for (let i = 1; i < entries.length; i++) {
+    const curr = entries[i][key];
+    const prev = entries[i-1][key];
+    if (curr != null && prev != null) result.push({ month: entries[i].month, val: curr - prev });
+    else result.push({ month: entries[i].month, val: null });
+  }
+  return result;
+}
+
+function renderAuswertung() {
+  const year = parseInt(document.getElementById('yearSelect').value);
+  const yearData = data.filter(d => d.month.startsWith(year));
+  const allYearData = data.filter(d => d.month.startsWith(year) || d.month.startsWith(year - 1));
+
+  renderStats(yearData, allYearData, year);
+  renderCharts(yearData, allYearData, year);
+  renderTable(yearData, allYearData);
+}
+
+function renderStats(yd, ayd, year) {
+  const grid = document.getElementById('statsGrid');
+  if (yd.length < 2) { grid.innerHTML = ''; return; }
+
+  const gasVerb = getVerbrauch(ayd.filter(d => d.month.startsWith(year)), 'gasStand').reduce((s,v) => s + (v.val||0), 0);
+  const waterVerb = getVerbrauch(ayd.filter(d => d.month.startsWith(year)), 'waterStand').reduce((s,v) => s + (v.val||0), 0);
+  const stromBezug = yd.reduce((s,d) => s + (d.stromBezug||0), 0);
+  const pvErzeug = yd.reduce((s,d) => s + (d.pvErzeugung||0), 0);
+  const pvEinsp = yd.reduce((s,d) => s + (d.pvEinspeisung||0), 0);
+  const pvEigenverbr = pvErzeug - pvEinsp;
+
+  const gasKosten = gasVerb * preise.gas;
+  const waterKosten = waterVerb * preise.water;
+  const stromKosten = stromBezug * preise.strom;
+  const einspeisErtrag = pvEinsp * preise.einsp;
+  const gesamtKosten = gasKosten + waterKosten + stromKosten - einspeisErtrag;
+
+  grid.innerHTML = `
+    <div class="stat-card"><div class="stat-val" style="color:var(--gas)">${gasVerb.toFixed(0)}</div><div class="stat-lbl">Gas m³</div><div class="stat-sub">${gasKosten.toFixed(0)} €</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--water)">${waterVerb.toFixed(1)}</div><div class="stat-lbl">Wasser m³</div><div class="stat-sub">${waterKosten.toFixed(0)} €</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#b08e00">${stromBezug.toFixed(0)}</div><div class="stat-lbl">Strom kWh</div><div class="stat-sub">${stromKosten.toFixed(0)} €</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--pv)">${pvErzeug.toFixed(0)}</div><div class="stat-lbl">PV erzeugt</div><div class="stat-sub">${pvEigenverbr.toFixed(0)} kWh eigen</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--einspeisung)">${pvEinsp.toFixed(0)}</div><div class="stat-lbl">Einspeisung</div><div class="stat-sub">${einspeisErtrag.toFixed(0)} €</div></div>
+    <div class="stat-card"><div class="stat-val">${gesamtKosten.toFixed(0)}</div><div class="stat-lbl">Gesamtkosten</div><div class="stat-sub">inkl. Einsp.-Ertrag</div></div>
+  `;
+}
+
+function renderCharts(yd, ayd, year) {
+  const labels = yd.map(d => MONTHS[parseInt(d.month.split('-')[1]) - 1]);
+
+  // Gas – need prev month for consumption
+  const gasVerb = [];
+  for (let i = 0; i < yd.length; i++) {
+    const prev = ayd.find(d => {
+      const [y2, m2] = d.month.split('-').map(Number);
+      const [y1, m1] = yd[i].month.split('-').map(Number);
+      return m1 === 1 ? y2 === y1-1 && m2 === 12 : y2 === y1 && m2 === m1-1;
+    });
+    gasVerb.push(prev && yd[i].gasStand != null && prev.gasStand != null ? +(yd[i].gasStand - prev.gasStand).toFixed(3) : null);
+  }
+
+  const waterVerb = [];
+  for (let i = 0; i < yd.length; i++) {
+    const prev = ayd.find(d => {
+      const [y2, m2] = d.month.split('-').map(Number);
+      const [y1, m1] = yd[i].month.split('-').map(Number);
+      return m1 === 1 ? y2 === y1-1 && m2 === 12 : y2 === y1 && m2 === m1-1;
+    });
+    waterVerb.push(prev && yd[i].waterStand != null && prev.waterStand != null ? +(yd[i].waterStand - prev.waterStand).toFixed(3) : null);
+  }
+
+  makeChart('chartGas', labels, [{label:'Gas m³', data: gasVerb, backgroundColor:'rgba(232,93,38,0.7)', borderColor:'var(--gas)', borderWidth:2}], 'bar');
+  makeChart('chartWater', labels, [{label:'Wasser m³', data: waterVerb, backgroundColor:'rgba(38,128,232,0.7)', borderColor:'var(--water)', borderWidth:2}], 'bar');
+  makeChart('chartStrom', labels, [{label:'Strom kWh', data: yd.map(d=>d.stromBezug), backgroundColor:'rgba(245,196,0,0.6)', borderColor:'#b08e00', borderWidth:2}], 'bar');
+  makeChart('chartPV', labels, [
+    {label:'Erzeugung', data: yd.map(d=>d.pvErzeugung), backgroundColor:'rgba(40,180,99,0.5)', borderColor:'var(--pv)', borderWidth:2},
+    {label:'Einspeisung', data: yd.map(d=>d.pvEinspeisung), backgroundColor:'rgba(26,122,68,0.5)', borderColor:'var(--einspeisung)', borderWidth:2},
+  ], 'bar');
+}
+
+function makeChart(id, labels, datasets, type) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  charts[id] = new Chart(ctx, {
+    type,
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: datasets.length > 1, labels: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#8a857a' } } },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#8a857a' } },
+        y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#8a857a' } },
+      }
+    }
+  });
+}
+
+function renderTable(yd, ayd) {
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+
+  if (yd.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = yd.map((d, i) => {
+    const prev = ayd.find(x => {
+      const [y2, m2] = x.month.split('-').map(Number);
+      const [y1, m1] = d.month.split('-').map(Number);
+      return m1 === 1 ? y2 === y1-1 && m2 === 12 : y2 === y1 && m2 === m1-1;
+    });
+
+    const gasV = prev && d.gasStand != null && prev.gasStand != null ? (d.gasStand - prev.gasStand).toFixed(3) : '—';
+    const waterV = prev && d.waterStand != null && prev.waterStand != null ? (d.waterStand - prev.waterStand).toFixed(3) : '—';
+    const pvEigen = (d.pvErzeugung||0) - (d.pvEinspeisung||0);
+
+    const gasK = gasV !== '—' ? (parseFloat(gasV) * preise.gas).toFixed(2) : '—';
+    const waterK = waterV !== '—' ? (parseFloat(waterV) * preise.water).toFixed(2) : '—';
+    const stromK = d.stromBezug != null ? (d.stromBezug * preise.strom).toFixed(2) : '—';
+    const einspK = d.pvEinspeisung != null ? (d.pvEinspeisung * preise.einsp).toFixed(2) : '—';
+
+    const [y, m] = d.month.split('-').map(Number);
+    return `<tr>
+      <td><strong>${MONTHS[m-1]} ${y}</strong></td>
+      <td>${d.gasStand != null ? d.gasStand.toFixed(3) : '—'}</td>
+      <td class="td-gas">${gasV}</td>
+      <td>${gasK !== '—' ? gasK + ' €' : '—'}</td>
+      <td>${d.waterStand != null ? d.waterStand.toFixed(3) : '—'}</td>
+      <td class="td-water">${waterV}</td>
+      <td>${waterK !== '—' ? waterK + ' €' : '—'}</td>
+      <td class="td-strom">${d.stromBezug != null ? d.stromBezug.toFixed(2) : '—'}</td>
+      <td>${stromK !== '—' ? stromK + ' €' : '—'}</td>
+      <td class="td-pv">${d.pvErzeugung != null ? d.pvErzeugung.toFixed(1) : '—'}</td>
+      <td>${d.pvEinspeisung != null ? d.pvEinspeisung.toFixed(1) : '—'}</td>
+      <td>${pvEigen > 0 ? pvEigen.toFixed(1) : '—'}</td>
+      <td>${einspK !== '—' ? einspK + ' €' : '—'}</td>
+      <td><button class="btn-delete" onclick="deleteEntry('${d.month}')">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+async function deleteEntry(month) {
+  if (!confirm(`Eintrag ${month} löschen?`)) return;
+  showLoading('Löschen…');
+  await apiGet('deleteEntry', { month });
+  data = data.filter(d => d.month !== month);
+  hideLoading();
+  renderAuswertung();
+}
+
+// ── EXCEL EXPORT ──
+function exportExcel() {
+  const year = document.getElementById('yearSelect').value;
+  const yd = data.filter(d => d.month.startsWith(year));
+  const ayd = data.filter(d => d.month.startsWith(year) || d.month.startsWith(parseInt(year) - 1));
+
+  const rows = [['Monat','Gas Stand','Gas Verbrauch m³','Gas Kosten €','Wasser Stand','Wasser Verbrauch m³','Wasser Kosten €','Strom Bezug kWh','Strom Kosten €','PV Erzeugung kWh','PV Einspeisung kWh','PV Eigenverbrauch kWh','Einspeisevergütung €']];
+
+  yd.forEach(d => {
+    const prev = ayd.find(x => {
+      const [y2, m2] = x.month.split('-').map(Number);
+      const [y1, m1] = d.month.split('-').map(Number);
+      return m1 === 1 ? y2 === y1-1 && m2 === 12 : y2 === y1 && m2 === m1-1;
+    });
+    const [y, m] = d.month.split('-').map(Number);
+    const gasV = prev && d.gasStand != null && prev.gasStand != null ? +(d.gasStand - prev.gasStand).toFixed(3) : '';
+    const waterV = prev && d.waterStand != null && prev.waterStand != null ? +(d.waterStand - prev.waterStand).toFixed(3) : '';
+    const pvEigen = (d.pvErzeugung||0) - (d.pvEinspeisung||0);
+
+    rows.push([
+      `${MONTHS[m-1]} ${y}`,
+      d.gasStand ?? '',
+      gasV,
+      gasV !== '' ? +(gasV * preise.gas).toFixed(2) : '',
+      d.waterStand ?? '',
+      waterV,
+      waterV !== '' ? +(waterV * preise.water).toFixed(2) : '',
+      d.stromBezug ?? '',
+      d.stromBezug != null ? +(d.stromBezug * preise.strom).toFixed(2) : '',
+      d.pvErzeugung ?? '',
+      d.pvEinspeisung ?? '',
+      pvEigen > 0 ? +pvEigen.toFixed(1) : '',
+      d.pvEinspeisung != null ? +(d.pvEinspeisung * preise.einsp).toFixed(2) : '',
+    ]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, `Energie ${year}`);
+  XLSX.writeFile(wb, `Energie_${year}_Warendorf.xlsx`);
+}
+
+// ── NAV ──
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('s-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'auswertung') renderAuswertung();
+}
+
+init();
+</script>
+</body>
+</html>
