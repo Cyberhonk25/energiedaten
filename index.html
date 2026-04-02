@@ -290,6 +290,7 @@ tr:hover td { background: var(--bg); }
     <div class="section-title">Auswertung</div>
     <select class="year-select" id="yearSelect" onchange="renderAuswertung()"></select>
     <button class="btn-green" onclick="exportExcel()">↓ Excel Export</button>
+    <button class="btn-secondary" onclick="refreshData()">↺ Aktualisieren</button>
   </div>
 
   <div class="stats-grid" id="statsGrid"></div>
@@ -447,6 +448,21 @@ async function apiPost(action, body) {
 
 function showLoading(msg) { const b = document.getElementById('loading-bar'); b.textContent = msg; b.style.display = 'block'; }
 function hideLoading() { document.getElementById('loading-bar').style.display = 'none'; }
+
+// ── REFRESH ──
+async function refreshData() {
+  showLoading('Daten werden neu geladen…');
+  const [rawData, rawPreise] = await Promise.all([apiGet('getData'), apiGet('getPreise')]);
+  if (rawData) data = rawData.map(normalizeEntry);
+  if (rawPreise) {
+    preise = { gas: +rawPreise.gas||0.08, water: +rawPreise.water||2.50, water2: +rawPreise.water2||2.50, strom: +rawPreise.strom||0.32, einsp: +rawPreise.einsp||0.082 };
+    if (rawPreise.vorjahr) vorjahr = rawPreise.vorjahr;
+  }
+  hideLoading();
+  loadPreise();
+  updatePreviews();
+  renderAuswertung();
+}
 
 // ── EXCEL BESTANDSDATEN ──
 const EXCEL_DATA = [
