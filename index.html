@@ -857,130 +857,172 @@ async function deleteEntry(month) {
   renderAuswertung();
 }
 
-// ── EXCEL EXPORT ──
+// ── EXCEL EXPORT ── (Layout wie Zählerstände YYYY.xlsx)
 function exportExcel() {
   const year = parseInt(document.getElementById('yearSelect').value);
-  const yd = data.filter(d => d.month.startsWith(year));
-  const allData = data;
-  const gasV   = calcVerbrauch(yd, 'gasStand',  allData);
-  const waterV = calcVerbrauch(yd, 'waterStand', allData);
-  const stromV = calcVerbrauch(yd, 'stromStand', allData);
-  const pvV    = calcVerbrauch(yd, 'pvStand',    allData);
+
+  // Alle 12 Monate des Jahres, null wenn kein Eintrag
+  const months   = Array.from({length:12}, (_,i) => `${year}-${String(i+1).padStart(2,'0')}`);
+  const mData    = months.map(m => data.find(d => d.month === m) || null);
+  const prevDec  = data.find(d => d.month === `${year-1}-12`) || {};
+
+  // Verbrauch pro Monat (aktuell - Vormonat)
+  function verbr(key) {
+    return mData.map((d, i) => {
+      if (!d || d[key] == null) return null;
+      const prev = i === 0 ? prevDec : mData[i-1];
+      if (!prev || prev[key] == null) return null;
+      return +(d[key] - prev[key]).toFixed(3);
+    });
+  }
+
+  const gasV    = verbr('gasStand');
+  const waterV  = verbr('waterStand');
+  const water2V = verbr('water2Stand');
+  const stromV  = verbr('stromStand');
+  const pvV     = verbr('pvStand');
+
+  // Hilfsfunktionen
+  const s      = arr => arr.reduce((a,v) => a + (v||0), 0);
+  const fmt    = (v, d=1) => v != null ? +v.toFixed(d) : '';
+  const v_     = arr => arr.map(v => fmt(v));
+  const a_     = (key) => mData.map(d => d?.[key] != null ? d[key] : '');
+  const stand_ = (key) => mData.map(d => d?.[key] != null ? d[key] : '');
+  const lastDay = (y,m) => new Date(y,m,0).getDate();
+
+  // Ablesedaten (letzter Tag des Monats)
+  const ablese = months.map((_,i) => {
+    const d = lastDay(year, i+1);
+    return `${String(d).padStart(2,'0')}.${String(i+1).padStart(2,'0')}.${year}`;
+  });
+
+  // Zeilen-Helfer
+  const H = (label, unit_or_prev, values, gesamtVal='') =>
+    [label, unit_or_prev, ...values, '', gesamtVal];
+
+  const MONATE_HEADER = ['Verbrauchsmonat','', ...MONTHS_FULL,'','Gesamt'];
+  const EMPTY = [];
+
+  const rows = [];
+
+  // ── Titel ──
+  rows.push([`Energie Verbrauchskosten Kontrolle (${year})`]);
+  rows.push(['Breslauer Straße 32, 48231 Warendorf']);
+  rows.push(EMPTY);
+
+  // ── Temperatur ──
+  const temps = mData.map(d => d?.temp != null ? d.temp : '');
+  const validTemps = mData.filter(d => d?.temp != null).map(d => d.temp);
+  const avgTemp = validTemps.length ? +(s(validTemps)/validTemps.length).toFixed(2) : '';
+  rows.push(['Temperaturverlauf']);
+  rows.push(MONATE_HEADER.map((v,i) => i===15 ? 'Durchschnitt' : v));
+  rows.push(['Temperatur', 'C°', ...temps, '', avgTemp]);
+  rows.push(EMPTY);
+  rows.push(EMPTY);
+
+  // ── Wasser (innen) ──
+  const wStand = stand_('waterStand');
+  const wAbschl = a_('waterAbschlag');
+  const wKosten = waterV.map(v => v != null ? +(v * preise.water).toFixed(2) : '');
+  rows.push(['Wasser','','','','','','','','','','','','','','','','','Schlussrechnung']);
+  rows.push(['Zähler-Nr.',230123,'Anbieter','WEV','seit','13.10.2021','Kunden-Nr.','295.174.073-1']);
+  rows.push(EMPTY);
+  rows.push(MONATE_HEADER);
+  rows.push(H('Ablesedatum', '', ablese));
+  rows.push(H('Zählerstand', prevDec.waterStand ?? '', wStand));
+  rows.push(H('Verbrauch', 'm³', v_(waterV), fmt(s(waterV.filter(v=>v!=null)),1)));
+  rows.push(H('Verbrauch Vorjahr', 'm³', vorjahr.water, s(vorjahr.water)));
+  rows.push(EMPTY);
+  rows.push(H('Verbrauchskosten', '€', wKosten, fmt(s(wKosten.filter(v=>v!=='')),2)));
+  rows.push(H('Abschlag', '€', wAbschl, fmt(s(wAbschl.filter(v=>v!=='')),2)));
+  rows.push(H('bezahlt am', '', Array(12).fill(''), fmt(s(wAbschl.filter(v=>v!=='')),2)));
+  rows.push(EMPTY);
+  rows.push(EMPTY);
+
+  // ── Wasser Außen ──
+  const w2Stand = stand_('water2Stand');
+  rows.push(['Wasser Außen']);
+  rows.push(['Zähler-Nr.','8 DEL22 4716 8775','Anbieter','WEV','seit','04.06.2024','Kunden-Nr.','','Achtung! Zählerstand melden bis 15.01. des Folgejahres!']);
+  rows.push(EMPTY);
+  rows.push(MONATE_HEADER);
+  rows.push(H('Ablesedatum', '', ablese));
+  rows.push(H('Zählerstand', prevDec.water2Stand ?? '', w2Stand));
+  rows.push(H('Verbrauch', 'm³', v_(water2V), fmt(s(water2V.filter(v=>v!=null)),3)));
+  rows.push(H('Verbrauch Vorjahr', 'm³', Array(12).fill('')));
+  rows.push(EMPTY);
+  rows.push(H('Verbrauchskosten', '€', Array(12).fill('')));
+  rows.push(H('Abschlag', '€', Array(12).fill('')));
+  rows.push(H('bezahlt am', '', Array(12).fill('')));
+  rows.push(EMPTY);
+  rows.push(EMPTY);
+
+  // ── Gas ──
+  const gStand  = stand_('gasStand');
+  const gAbschl = a_('gasAbschlag');
+  const gKosten = gasV.map(v => v != null ? +(v * preise.gas).toFixed(2) : '');
+  rows.push(['Gas']);
+  rows.push(['Zähler-Nr.','7PIP0005131850','Anbieter','Eprimo','seit','15.02.2025','Kunden-Nr.',49121741]);
+  rows.push(EMPTY);
+  rows.push(MONATE_HEADER);
+  rows.push(H('Ablesedatum', '', ablese));
+  rows.push(H('Zählerstand', prevDec.gasStand ?? '', gStand));
+  rows.push(H('Verbrauch', 'm³', v_(gasV), fmt(s(gasV.filter(v=>v!=null)),0)));
+  rows.push(H('Verbrauch Vorjahr', 'm³', vorjahr.gas, s(vorjahr.gas)));
+  rows.push(EMPTY);
+  rows.push(H('Verbrauchskosten', '€', gKosten, fmt(s(gKosten.filter(v=>v!=='')),2)));
+  rows.push(H('Abschlag', '€', gAbschl, fmt(s(gAbschl.filter(v=>v!=='')),2)));
+  rows.push(H('bezahlt am', '', Array(12).fill(''), fmt(s(gAbschl.filter(v=>v!=='')),2)));
+  rows.push(EMPTY);
+  rows.push(EMPTY);
+
+  // ── Strom ──
+  const sStand  = stand_('stromStand');
+  const sAbschl = a_('stromAbschlag');
+  const sKosten = stromV.map(v => v != null ? +(v * preise.strom).toFixed(2) : '');
+  rows.push(['Strom']);
+  rows.push(['Zähler-Nr.','67768205 (1.8.0)','Anbieter','WEV','seit','03.11.2021','Kunden-Nr.','384.920.948-1']);
+  rows.push(EMPTY);
+  rows.push(MONATE_HEADER);
+  rows.push(H('Ablesedatum', '', ablese));
+  rows.push(H('Zählerstand', prevDec.stromStand ?? '', sStand));
+  rows.push(H('Verbrauch', 'kWh', v_(stromV), fmt(s(stromV.filter(v=>v!=null)),0)));
+  rows.push(H('Verbrauch Vorjahr', 'kWh', vorjahr.strom, s(vorjahr.strom)));
+  rows.push(EMPTY);
+  rows.push(H('Verbrauchskosten', '€', sKosten, fmt(s(sKosten.filter(v=>v!=='')),2)));
+  rows.push(H('Abschlag', '€', sAbschl, fmt(s(sAbschl.filter(v=>v!=='')),2)));
+  rows.push(H('bezahlt am', '', Array(12).fill(''), fmt(s(sAbschl.filter(v=>v!=='')),2)));
+  rows.push(EMPTY);
+  rows.push(EMPTY);
+
+  // ── Strom Photovoltaik ──
+  const pvStand_  = stand_('pvStand');
+  const pvAbschl  = a_('pvAbschlag');
+  const pvKosten  = pvV.map(v => v != null ? +(v * preise.einsp).toFixed(2) : '');
+  rows.push(['Strom Photovoltaik']);
+  rows.push(['Zähler-Nr.','67768205 (2.8.0)','Anbieter','WEV','seit','06.10.2021','Kunden-Nr.','357.736.535-1']);
+  rows.push(EMPTY);
+  rows.push(MONATE_HEADER);
+  rows.push(H('Ablesedatum', '', ablese));
+  rows.push(H('Zählerstand', prevDec.pvStand ?? '', pvStand_));
+  rows.push(H('Ertrag', 'kWh', v_(pvV), fmt(s(pvV.filter(v=>v!=null)),0)));
+  rows.push(H('Ertrag Vorjahr', 'kWh', vorjahr.pv, s(vorjahr.pv)));
+  rows.push(EMPTY);
+  rows.push(H('Verbrauchskosten', '€', pvKosten, fmt(s(pvKosten.filter(v=>v!=='')),2)));
+  rows.push(H('Abschlag', '€', pvAbschl, fmt(s(pvAbschl.filter(v=>v!=='')),2)));
+  rows.push(H('erhalten am', '', Array(12).fill(''), -s(pvAbschl.filter(v=>v!==''))));
+  rows.push(EMPTY);
+
+  // Sheet bauen
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = [
+    {wch:22}, {wch:20},
+    ...Array(12).fill({wch:11}),
+    {wch:3}, {wch:14}, {wch:5}, {wch:28}
+  ];
 
   const wb = XLSX.utils.book_new();
-
-  // ── Blatt 1: Übersicht ──
-  const uRows = [
-    [`Energie Verbrauchskosten Kontrolle (${year})`],
-    ['Breslauer Straße 32, 48231 Warendorf'],
-    [],
-    ['Monat','Temp °C',
-     'Gas Stand','Gas m³','Gas VJ','Gas Kosten €','Gas Abschlag €',
-     'Wasser Stand','Wasser m³','Wasser VJ','Wasser Kosten €','Wasser Abschlag €',
-     'Strom Stand','Strom kWh','Strom VJ','Strom Kosten €','Strom Abschlag €',
-     'PV Stand','PV kWh','PV VJ','Einsp. Vergütung €','PV Abschlag €']
-  ];
-
-  const totals = { gas:0, gasK:0, gasA:0, water:0, waterK:0, waterA:0, strom:0, stromK:0, stromA:0, pv:0, pvK:0, pvA:0 };
-
-  yd.forEach((d, i) => {
-    const mi = parseInt(d.month.split('-')[1]) - 1;
-    const gV = gasV[i]; const wV = waterV[i]; const sV = stromV[i]; const pV = pvV[i];
-    const gK = gV != null ? +(gV * preise.gas).toFixed(2) : '';
-    const wK = wV != null ? +(wV * preise.water).toFixed(2) : '';
-    const sK = sV != null ? +(sV * preise.strom).toFixed(2) : '';
-    const pK = pV != null ? +(pV * preise.einsp).toFixed(2) : '';
-    if (gV) { totals.gas += gV; totals.gasK += gK||0; }
-    if (d.gasAbschlag) totals.gasA += d.gasAbschlag;
-    if (wV) { totals.water += wV; totals.waterK += wK||0; }
-    if (d.waterAbschlag) totals.waterA += d.waterAbschlag;
-    if (sV) { totals.strom += sV; totals.stromK += sK||0; }
-    if (d.stromAbschlag) totals.stromA += d.stromAbschlag;
-    if (pV) { totals.pv += pV; totals.pvK += pK||0; }
-    if (d.pvAbschlag) totals.pvA += d.pvAbschlag;
-
-    uRows.push([
-      MONTHS_FULL[mi],
-      d.temp ?? '',
-      d.gasStand ?? '', gV ?? '', vorjahr.gas[mi] ?? '', gK, d.gasAbschlag ?? '',
-      d.waterStand ?? '', wV ?? '', vorjahr.water[mi] ?? '', wK, d.waterAbschlag ?? '',
-      d.stromStand ?? '', sV ?? '', vorjahr.strom[mi] ?? '', sK, d.stromAbschlag ?? '',
-      d.pvStand ?? '', pV ?? '', vorjahr.pv[mi] ?? '', pK, d.pvAbschlag ?? '',
-    ]);
-  });
-
-  uRows.push([]);
-  uRows.push(['GESAMT','',
-    '', totals.gas.toFixed(0), '', totals.gasK.toFixed(2), totals.gasA.toFixed(2),
-    '', totals.water.toFixed(1), '', totals.waterK.toFixed(2), totals.waterA.toFixed(2),
-    '', totals.strom.toFixed(0), '', totals.stromK.toFixed(2), totals.stromA.toFixed(2),
-    '', totals.pv.toFixed(0), '', totals.pvK.toFixed(2), totals.pvA.toFixed(2),
-  ]);
-
-  const wsU = XLSX.utils.aoa_to_sheet(uRows);
-  wsU['!cols'] = Array(22).fill({ wch: 14 });
-  XLSX.utils.book_append_sheet(wb, wsU, `Übersicht ${year}`);
-
-  // ── Blatt 2: Vorjahresvergleich ──
-  const vjRows = [
-    [`Vorjahresvergleich ${year} vs ${year-1}`],
-    [],
-    ['Monat','Gas '+year,'Gas VJ','Diff','Diff %','Wasser '+year,'Wasser VJ','Diff','Diff %','Strom '+year,'Strom VJ','Diff','Diff %','PV '+year,'PV VJ','Diff','Diff %'],
-  ];
-
-  yd.forEach((d, i) => {
-    const mi = parseInt(d.month.split('-')[1]) - 1;
-    const gV = gasV[i]; const wV = waterV[i]; const sV = stromV[i]; const pV = pvV[i];
-    function diff(v, vj) { return v != null && vj != null ? +(v - vj).toFixed(1) : ''; }
-    function pct(v, vj)  { return v != null && vj && vj > 0 ? +((v-vj)/vj*100).toFixed(1) : ''; }
-    vjRows.push([
-      MONTHS_FULL[mi],
-      gV ?? '', vorjahr.gas[mi] ?? '', diff(gV, vorjahr.gas[mi]), pct(gV, vorjahr.gas[mi]),
-      wV ?? '', vorjahr.water[mi] ?? '', diff(wV, vorjahr.water[mi]), pct(wV, vorjahr.water[mi]),
-      sV ?? '', vorjahr.strom[mi] ?? '', diff(sV, vorjahr.strom[mi]), pct(sV, vorjahr.strom[mi]),
-      pV ?? '', vorjahr.pv[mi] ?? '', diff(pV, vorjahr.pv[mi]), pct(pV, vorjahr.pv[mi]),
-    ]);
-  });
-
-  const wsVJ = XLSX.utils.aoa_to_sheet(vjRows);
-  wsVJ['!cols'] = Array(17).fill({ wch: 13 });
-  XLSX.utils.book_append_sheet(wb, wsVJ, `Vergleich ${year} vs ${year-1}`);
-
-  // ── Blatt 3: Gas Detail ──
-  buildDetailSheet(wb, 'Gas', year, yd, gasV, 'gasStand', 'gasAbschlag', 'm³', preise.gas, vorjahr.gas);
-  buildDetailSheet(wb, 'Wasser', year, yd, waterV, 'waterStand', 'waterAbschlag', 'm³', preise.water, vorjahr.water);
-  buildDetailSheet(wb, 'Strom', year, yd, stromV, 'stromStand', 'stromAbschlag', 'kWh', preise.strom, vorjahr.strom);
-  buildDetailSheet(wb, 'PV', year, yd, pvV, 'pvStand', 'pvAbschlag', 'kWh', preise.einsp, vorjahr.pv);
-
-  XLSX.writeFile(wb, `Energie_${year}_Warendorf.xlsx`);
-}
-
-function buildDetailSheet(wb, name, year, yd, verbr, standKey, abschlagKey, unit, preis, vjArr) {
-  const rows = [
-    [`${name} – Detailauswertung ${year}`],
-    [],
-    ['Monat','Zählerstand','Verbrauch '+unit,'Vorjahr '+unit,'Diff','Diff %','Kosten €','Abschlag €','Diff (Abschl. - Kosten)','Temp °C'],
-  ];
-  let sumV=0, sumK=0, sumA=0;
-  yd.forEach((d, i) => {
-    const mi = parseInt(d.month.split('-')[1]) - 1;
-    const v  = verbr[i];
-    const k  = v != null ? +(v * preis).toFixed(2) : '';
-    const vj = vjArr[mi] ?? '';
-    const df = v != null && vj !== '' ? +(v - vj).toFixed(1) : '';
-    const pc = v != null && vj > 0 ? +((v-vj)/vj*100).toFixed(1) : '';
-    const a  = d[abschlagKey] ?? '';
-    const ad = k !== '' && a !== '' ? +(a - k).toFixed(2) : '';
-    if (v) sumV += v;
-    if (k) sumK += k;
-    if (a) sumA += a;
-    rows.push([MONTHS_FULL[mi], d[standKey]??'', v??'', vj, df, pc, k, a, ad, d.temp??'']);
-  });
-  rows.push([]);
-  rows.push(['GESAMT','',sumV.toFixed(1),'','','',sumK.toFixed(2),sumA.toFixed(2),+(sumA-sumK).toFixed(2),'']);
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws['!cols'] = Array(10).fill({ wch: 16 });
-  XLSX.utils.book_append_sheet(wb, ws, name);
+  XLSX.utils.book_append_sheet(wb, ws, String(year));
+  XLSX.writeFile(wb, `Zählerstände ${year}.xlsx`);
 }
 
 // ── NAV ──
