@@ -17,382 +17,145 @@
   --muted: #8a857a;
   --gas: #e85d26;
   --water: #2680e8;
-  --strom: #f5c400;
+  --water2: #5ba3f5;
+  --strom: #c8a000;
   --pv: #28b463;
-  --einspeisung: #1a7a44;
-  --accent: #1a1814;
+  --einsp: #1a7a44;
+  --temp: #9b59b6;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'IBM Plex Mono', monospace;
-  min-height: 100vh;
-  padding: 0;
-}
+body { background: var(--bg); color: var(--text); font-family: 'IBM Plex Mono', monospace; min-height: 100vh; }
 
-.top-bar {
-  background: var(--text);
-  color: var(--bg);
-  padding: 20px 32px;
-  display: flex;
-  align-items: baseline;
-  gap: 24px;
-}
+.top-bar { background: var(--text); color: var(--bg); padding: 20px 32px; display: flex; align-items: baseline; gap: 24px; flex-wrap: wrap; }
+.top-bar h1 { font-family: 'Bebas Neue', sans-serif; font-size: 42px; letter-spacing: 2px; line-height: 1; }
+.top-bar span { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.5; }
 
-.top-bar h1 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 42px;
-  letter-spacing: 2px;
-  line-height: 1;
-}
+#loading-bar { display: none; background: #f5c400; color: #1a1814; padding: 8px 32px; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; }
 
-.top-bar span {
-  font-size: 11px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  opacity: 0.5;
-}
-
-.nav {
-  background: var(--text);
-  border-top: 1px solid rgba(255,255,255,0.1);
-  padding: 0 32px;
-  display: flex;
-  gap: 0;
-}
-
-.nav-btn {
-  background: none;
-  border: none;
-  color: rgba(240,236,228,0.5);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 12px 20px;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.15s;
-}
-
+.nav { background: var(--text); border-top: 1px solid rgba(255,255,255,0.1); padding: 0 32px; display: flex; gap: 0; flex-wrap: wrap; }
+.nav-btn { background: none; border: none; color: rgba(240,236,228,0.5); font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; padding: 12px 18px; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
 .nav-btn:hover { color: var(--bg); }
 .nav-btn.active { color: var(--bg); border-bottom-color: var(--bg); }
 
-.content { padding: 32px; max-width: 1100px; }
+.content { padding: 24px 32px; max-width: 1200px; }
 
-/* SECTION */
 .section { display: none; }
 .section.active { display: block; }
 
-/* PREISE */
-.preise-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-  margin-bottom: 32px;
+/* ── EINGABE ── */
+.eingabe-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.eingabe-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; }
+
+.month-select, .year-select {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+  font-family: 'IBM Plex Mono', monospace; font-size: 13px; padding: 8px 12px; outline: none; cursor: pointer;
 }
 
-.preis-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 16px;
-}
+.zaehler-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-bottom: 20px; }
 
-.preis-label {
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-}
-
-.preis-input-wrap { display: flex; align-items: center; gap: 6px; }
-
-.preis-input {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 16px;
-  font-weight: 600;
-  padding: 8px 10px;
-  width: 100%;
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.preis-input:focus { border-color: var(--text); }
-.preis-unit { font-size: 10px; color: var(--muted); white-space: nowrap; }
-
-/* EINGABE */
-.eingabe-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.eingabe-header h2 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 28px;
-  letter-spacing: 1px;
-}
-
-.month-select {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  padding: 8px 12px;
-  outline: none;
-  cursor: pointer;
-}
-
-.zaehler-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.zaehler-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 18px;
-  position: relative;
-  overflow: hidden;
-}
-
-.zaehler-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-}
-
+.zaehler-card { background: var(--surface); border: 1px solid var(--border); padding: 18px; position: relative; overflow: hidden; }
+.zaehler-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
 .zaehler-card.gas::before { background: var(--gas); }
 .zaehler-card.water::before { background: var(--water); }
+.zaehler-card.water2::before { background: var(--water2); }
 .zaehler-card.strom::before { background: var(--strom); }
 .zaehler-card.pv::before { background: var(--pv); }
+.zaehler-card.temp::before { background: var(--temp); }
 
-.zaehler-title {
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.zaehler-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.zaehler-meta { font-size: 9px; color: var(--border); margin-bottom: 12px; letter-spacing: 0.5px; }
 
-.zaehler-emoji { font-size: 16px; }
-
-.zaehler-inputs { display: flex; flex-direction: column; gap: 8px; }
-
+.input-group { display: flex; flex-direction: column; gap: 8px; }
 .input-row { display: flex; flex-direction: column; gap: 3px; }
 .input-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
 
 .z-input {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 18px;
-  font-weight: 600;
-  padding: 10px 12px;
-  outline: none;
-  width: 100%;
-  transition: border-color 0.15s;
+  background: var(--bg); border: 1px solid var(--border); color: var(--text);
+  font-family: 'IBM Plex Mono', monospace; font-size: 17px; font-weight: 600;
+  padding: 9px 12px; outline: none; width: 100%; transition: border-color 0.15s;
 }
-
 .z-input:focus { border-color: var(--text); }
-
 .z-input::placeholder { color: var(--border); font-weight: 400; }
 
-.verbrauch-preview {
-  margin-top: 10px;
-  padding: 8px 10px;
-  background: var(--bg);
-  border: 1px dashed var(--border);
-  font-size: 11px;
-  color: var(--muted);
-}
+.z-input.small { font-size: 14px; }
 
-.verbrauch-preview strong { color: var(--text); }
+.prev-box { margin-top: 10px; padding: 7px 10px; background: var(--bg); border: 1px dashed var(--border); font-size: 10px; color: var(--muted); line-height: 1.6; }
+.prev-box strong { color: var(--text); }
 
-.btn-save {
-  background: var(--text);
-  color: var(--bg);
-  border: none;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 14px 32px;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
 
-.btn-save:hover { opacity: 0.8; }
+.btn-primary { background: var(--text); color: var(--bg); border: none; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 13px 28px; cursor: pointer; transition: opacity 0.15s; }
+.btn-primary:hover { opacity: 0.8; }
 
-/* AUSWERTUNG */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 10px;
-  margin-bottom: 28px;
-}
+.btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 13px 20px; cursor: pointer; transition: all 0.15s; }
+.btn-secondary:hover { border-color: var(--text); color: var(--text); }
 
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 16px;
-  text-align: center;
-}
+.btn-green { background: var(--pv); color: #fff; border: none; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; padding: 13px 24px; cursor: pointer; transition: opacity 0.15s; }
+.btn-green:hover { opacity: 0.85; }
 
-.stat-val {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 32px;
-  line-height: 1;
-  margin-bottom: 4px;
-}
+.save-msg { display: none; font-size: 11px; color: var(--pv); letter-spacing: 1px; padding: 8px 0; }
 
+/* ── AUSWERTUNG ── */
+.section-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.section-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 1px; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); padding: 14px; text-align: center; }
+.stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 30px; line-height: 1; margin-bottom: 3px; }
 .stat-lbl { font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
-.stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.stat-sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+.stat-delta { font-size: 10px; margin-top: 3px; }
+.delta-up { color: var(--gas); }
+.delta-down { color: var(--pv); }
 
-.chart-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
-}
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+.chart-card { background: var(--surface); border: 1px solid var(--border); padding: 18px; }
+.chart-card.wide { grid-column: 1 / -1; }
+.chart-title { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.chart-wrap { position: relative; height: 200px; }
+.chart-wrap.tall { height: 260px; }
 
-.chart-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  padding: 20px;
-}
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-.chart-title {
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+/* ── TABELLE ── */
+.table-section { margin-bottom: 24px; }
+.table-section-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+.table-wrap { overflow-x: auto; }
 
-.chart-wrap { position: relative; height: 220px; }
-
-/* TABELLE */
-.table-wrap { overflow-x: auto; margin-bottom: 20px; }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-th {
-  background: var(--text);
-  color: var(--bg);
-  padding: 10px 12px;
-  text-align: left;
-  font-size: 9px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-td {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-}
-
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { background: var(--text); color: var(--bg); padding: 9px 10px; text-align: left; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 500; white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
 tr:hover td { background: var(--bg); }
-
 .td-gas { color: var(--gas); font-weight: 600; }
 .td-water { color: var(--water); font-weight: 600; }
-.td-strom { color: #b08e00; font-weight: 600; }
+.td-strom { color: var(--strom); font-weight: 600; }
 .td-pv { color: var(--pv); font-weight: 600; }
+.td-muted { color: var(--muted); font-size: 11px; }
+.td-prev { color: var(--muted); font-size: 11px; }
+.td-up { color: var(--gas); }
+.td-down { color: var(--pv); }
 
-.btn-export {
-  background: var(--pv);
-  color: #fff;
-  border: none;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  padding: 12px 24px;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.btn-export:hover { opacity: 0.85; }
-
-.btn-delete {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 10px;
-  padding: 4px 8px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
+.btn-delete { background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 3px 7px; cursor: pointer; transition: all 0.15s; }
 .btn-delete:hover { border-color: var(--gas); color: var(--gas); }
 
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--muted);
-  font-size: 12px;
-  letter-spacing: 1px;
-}
+.empty-state { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 12px; letter-spacing: 1px; }
+.empty-state .big { font-family: 'Bebas Neue'; font-size: 48px; opacity: 0.15; margin-bottom: 12px; }
 
-.empty-state div { font-family: 'Bebas Neue'; font-size: 48px; opacity: 0.15; margin-bottom: 12px; }
-
-.year-select {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  padding: 6px 10px;
-  outline: none;
-  cursor: pointer;
-}
-
-.section-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
+/* ── PREISE ── */
+.preise-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.preis-card { background: var(--surface); border: 1px solid var(--border); padding: 16px; }
+.preis-label { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.preis-input-wrap { display: flex; align-items: center; gap: 6px; }
+.preis-input { background: var(--bg); border: 1px solid var(--border); color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 600; padding: 8px 10px; width: 100%; outline: none; transition: border-color 0.15s; }
+.preis-input:focus { border-color: var(--text); }
+.preis-unit { font-size: 10px; color: var(--muted); white-space: nowrap; }
+.preis-section-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; margin: 20px 0 12px; color: var(--muted); }
 
 @media (max-width: 700px) {
   .chart-grid { grid-template-columns: 1fr; }
+  .chart-card.wide { grid-column: auto; }
   .content { padding: 16px; }
   .top-bar { padding: 16px; }
   .top-bar h1 { font-size: 32px; }
@@ -406,122 +169,166 @@ tr:hover td { background: var(--bg); }
   <span>Breslauer Str. 32 · Warendorf</span>
 </div>
 
-<div id="loading-bar" style="display:none;background:#f5c400;color:#1a1814;padding:8px 32px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;">Laden…</div>
+<div id="loading-bar">Laden…</div>
 
 <div class="nav">
-  <button class="nav-btn active" onclick="showSection('eingabe')">Eingabe</button>
-  <button class="nav-btn" onclick="showSection('auswertung')">Auswertung</button>
-  <button class="nav-btn" onclick="showSection('preise')">Preise</button>
+  <button class="nav-btn active" onclick="showSection('eingabe', this)">Eingabe</button>
+  <button class="nav-btn" onclick="showSection('auswertung', this)">Auswertung</button>
+  <button class="nav-btn" onclick="showSection('preise', this)">Tarife</button>
 </div>
 
 <div class="content">
 
-  <!-- EINGABE -->
-  <div class="section active" id="s-eingabe">
-    <div class="eingabe-header">
-      <h2>Zählerstand erfassen</h2>
-      <select class="month-select" id="monthSelect"></select>
-    </div>
-
-    <div class="zaehler-grid">
-      <div class="zaehler-card gas">
-        <div class="zaehler-title"><span class="zaehler-emoji">🔥</span> Gas</div>
-        <div class="zaehler-inputs">
-          <div class="input-row">
-            <div class="input-label">Zählerstand (m³)</div>
-            <input class="z-input" type="number" id="gas-stand" placeholder="0.000" step="0.001">
-          </div>
-        </div>
-        <div class="verbrauch-preview" id="prev-gas">Vormonat: —</div>
-      </div>
-
-      <div class="zaehler-card water">
-        <div class="zaehler-title"><span class="zaehler-emoji">💧</span> Wasser</div>
-        <div class="zaehler-inputs">
-          <div class="input-row">
-            <div class="input-label">Zählerstand (m³)</div>
-            <input class="z-input" type="number" id="water-stand" placeholder="0.000" step="0.001">
-          </div>
-        </div>
-        <div class="verbrauch-preview" id="prev-water">Vormonat: —</div>
-      </div>
-
-      <div class="zaehler-card strom">
-        <div class="zaehler-title"><span class="zaehler-emoji">⚡</span> Strom</div>
-        <div class="zaehler-inputs">
-          <div class="input-row">
-            <div class="input-label">Bezug (kWh)</div>
-            <input class="z-input" type="number" id="strom-bezug" placeholder="0.00" step="0.01">
-          </div>
-        </div>
-        <div class="verbrauch-preview" id="prev-strom">Vormonat: —</div>
-      </div>
-
-      <div class="zaehler-card pv">
-        <div class="zaehler-title"><span class="zaehler-emoji">☀️</span> PV-Anlage</div>
-        <div class="zaehler-inputs">
-          <div class="input-row">
-            <div class="input-label">Erzeugung (kWh)</div>
-            <input class="z-input" type="number" id="pv-erzeugung" placeholder="0.00" step="0.01">
-          </div>
-          <div class="input-row">
-            <div class="input-label">Einspeisung (kWh)</div>
-            <input class="z-input" type="number" id="pv-einspeisung" placeholder="0.00" step="0.01">
-          </div>
-        </div>
-        <div class="verbrauch-preview" id="prev-pv">Vormonat: —</div>
-      </div>
-    </div>
-
-    <button class="btn-save" onclick="saveEntry()">Speichern</button>
-    <div id="save-msg" style="display:none;margin-top:12px;font-size:11px;color:var(--pv);letter-spacing:1px;">✓ Gespeichert</div>
+<!-- ══════════════════════ EINGABE ══════════════════════ -->
+<div class="section active" id="s-eingabe">
+  <div class="eingabe-header">
+    <h2>Zählerstand erfassen</h2>
+    <select class="month-select" id="monthSelect"></select>
   </div>
 
-  <!-- AUSWERTUNG -->
-  <div class="section" id="s-auswertung">
-    <div class="section-actions">
-      <select class="year-select" id="yearSelect" onchange="renderAuswertung()"></select>
-      <button class="btn-export" onclick="exportExcel()">↓ Excel Export</button>
+  <div class="zaehler-grid">
+
+    <div class="zaehler-card temp">
+      <div class="zaehler-title">🌡️ Temperatur</div>
+      <div class="zaehler-meta">Ø Monatstemperatur Warendorf</div>
+      <div class="input-group">
+        <div class="input-row">
+          <div class="input-label">Durchschnitt °C</div>
+          <input class="z-input" type="number" id="temp-val" placeholder="0.0" step="0.1">
+        </div>
+      </div>
+      <div class="prev-box" id="prev-temp">Vormonat: —</div>
     </div>
 
-    <div class="stats-grid" id="statsGrid"></div>
-
-    <div class="chart-grid">
-      <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--gas)"></span> Gas Verbrauch (m³)</div>
-        <div class="chart-wrap"><canvas id="chartGas"></canvas></div>
+    <div class="zaehler-card water">
+      <div class="zaehler-title">💧 Wasser (innen)</div>
+      <div class="zaehler-meta">Zähler 230123 · WEV · Kd. 295.174.073-1</div>
+      <div class="input-group">
+        <div class="input-row">
+          <div class="input-label">Zählerstand (m³)</div>
+          <input class="z-input" type="number" id="water-stand" placeholder="148.000" step="0.001">
+        </div>
+        <div class="input-row">
+          <div class="input-label">Abschlag (€)</div>
+          <input class="z-input small" type="number" id="water-abschlag" placeholder="22" step="0.01">
+        </div>
       </div>
-      <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--water)"></span> Wasser Verbrauch (m³)</div>
-        <div class="chart-wrap"><canvas id="chartWater"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--strom)"></span> Strom Bezug (kWh)</div>
-        <div class="chart-wrap"><canvas id="chartStrom"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--pv)"></span> PV Erzeugung vs Einspeisung (kWh)</div>
-        <div class="chart-wrap"><canvas id="chartPV"></canvas></div>
-      </div>
+      <div class="prev-box" id="prev-water">Vormonat: —</div>
     </div>
 
+    <div class="zaehler-card water2">
+      <div class="zaehler-title">🌿 Wasser (außen)</div>
+      <div class="zaehler-meta">Zähler 8DEL22 4716 8775 · WEV · seit 04.06.2024</div>
+      <div class="input-group">
+        <div class="input-row">
+          <div class="input-label">Zählerstand (m³)</div>
+          <input class="z-input" type="number" id="water2-stand" placeholder="1.217" step="0.001">
+        </div>
+      </div>
+      <div class="prev-box" id="prev-water2">Vormonat: —</div>
+    </div>
+
+    <div class="zaehler-card gas">
+      <div class="zaehler-title">🔥 Gas</div>
+      <div class="zaehler-meta">Zähler 7PIP0005131850 · Eprimo · Kd. 49121741</div>
+      <div class="input-group">
+        <div class="input-row">
+          <div class="input-label">Zählerstand (m³)</div>
+          <input class="z-input" type="number" id="gas-stand" placeholder="718.000" step="0.001">
+        </div>
+        <div class="input-row">
+          <div class="input-label">Abschlag (€)</div>
+          <input class="z-input small" type="number" id="gas-abschlag" placeholder="221" step="0.01">
+        </div>
+      </div>
+      <div class="prev-box" id="prev-gas">Vormonat: —</div>
+    </div>
+
+    <div class="zaehler-card strom">
+      <div class="zaehler-title">⚡ Strom Bezug</div>
+      <div class="zaehler-meta">Zähler 67768205 (1.8.0) · WEV · Kd. 384.920.948-1</div>
+      <div class="input-group">
+        <div class="input-row">
+          <div class="input-label">Zählerstand (kWh)</div>
+          <input class="z-input" type="number" id="strom-stand" placeholder="908.00" step="0.01">
+        </div>
+        <div class="input-row">
+          <div class="input-label">Abschlag (€)</div>
+          <input class="z-input small" type="number" id="strom-abschlag" placeholder="36" step="0.01">
+        </div>
+      </div>
+      <div class="prev-box" id="prev-strom">Vormonat: —</div>
+    </div>
+
+    <div class="zaehler-card pv">
+      <div class="zaehler-title">☀️ PV Einspeisung</div>
+      <div class="zaehler-meta">Zähler 67768205 (2.8.0) · WEV · Kd. 357.736.535-1</div>
+      <div class="input-group">
+        <div class="input-row">
+          <div class="input-label">Zählerstand Einspeisung (kWh)</div>
+          <input class="z-input" type="number" id="pv-stand" placeholder="2143.00" step="0.01">
+        </div>
+        <div class="input-row">
+          <div class="input-label">Abschlag / Gutschrift (€)</div>
+          <input class="z-input small" type="number" id="pv-abschlag" placeholder="35" step="0.01">
+        </div>
+      </div>
+      <div class="prev-box" id="prev-pv">Vormonat: —</div>
+    </div>
+
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" onclick="saveEntry()">Speichern</button>
+  </div>
+  <div class="save-msg" id="save-msg">✓ Gespeichert in Google Sheets</div>
+</div>
+
+<!-- ══════════════════════ AUSWERTUNG ══════════════════════ -->
+<div class="section" id="s-auswertung">
+  <div class="section-header">
+    <div class="section-title">Auswertung</div>
+    <select class="year-select" id="yearSelect" onchange="renderAuswertung()"></select>
+    <button class="btn-green" onclick="exportExcel()">↓ Excel Export</button>
+  </div>
+
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <div class="chart-title"><span class="dot" style="background:var(--gas)"></span> Gas Verbrauch m³ · Vorjahr</div>
+      <div class="chart-wrap"><canvas id="chartGas"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title"><span class="dot" style="background:var(--water)"></span> Wasser Verbrauch m³ · Vorjahr</div>
+      <div class="chart-wrap"><canvas id="chartWater"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title"><span class="dot" style="background:var(--strom)"></span> Strom Bezug kWh · Vorjahr</div>
+      <div class="chart-wrap"><canvas id="chartStrom"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title"><span class="dot" style="background:var(--pv)"></span> PV Ertrag kWh · Vorjahr</div>
+      <div class="chart-wrap"><canvas id="chartPV"></canvas></div>
+    </div>
+    <div class="chart-card wide">
+      <div class="chart-title"><span class="dot" style="background:var(--temp)"></span> Temperaturverlauf °C & Gas-Verbrauch</div>
+      <div class="chart-wrap tall"><canvas id="chartTemp"></canvas></div>
+    </div>
+  </div>
+
+  <div class="table-section">
+    <div class="table-section-title"><span class="dot" style="background:var(--text);width:12px;height:12px"></span> Monatsdaten</div>
     <div class="table-wrap">
-      <table id="dataTable">
+      <table>
         <thead>
           <tr>
             <th>Monat</th>
-            <th>Gas Stand</th>
-            <th>Gas Verbr.</th>
-            <th>Gas €</th>
-            <th>Wasser Stand</th>
-            <th>Wasser Verbr.</th>
-            <th>Wasser €</th>
-            <th>Strom Bezug</th>
-            <th>Strom €</th>
-            <th>PV Erzeug.</th>
-            <th>PV Einsp.</th>
-            <th>PV Eigenverbr.</th>
-            <th>Einsp. €</th>
+            <th>°C</th>
+            <th>Gas Stand</th><th>Gas m³</th><th>Gas VJ</th><th>Gas €</th>
+            <th>Wasser Stand</th><th>Wasser m³</th><th>Wasser VJ</th><th>Wasser €</th>
+            <th>Strom Stand</th><th>Strom kWh</th><th>Strom VJ</th><th>Strom €</th>
+            <th>PV Stand</th><th>PV kWh</th><th>PV VJ</th><th>Einsp. €</th>
             <th></th>
           </tr>
         </thead>
@@ -529,112 +336,129 @@ tr:hover td { background: var(--bg); }
       </table>
     </div>
     <div class="empty-state" id="emptyState" style="display:none">
-      <div>📊</div>
+      <div class="big">📊</div>
       Noch keine Daten. Zählerstände eingeben und speichern.
     </div>
   </div>
-
-  <!-- PREISE -->
-  <div class="section" id="s-preise">
-    <div class="eingabe-header" style="margin-bottom:20px">
-      <h2>Tarife & Preise</h2>
-    </div>
-    <div class="preise-grid">
-      <div class="preis-card">
-        <div class="preis-label"><span class="dot" style="background:var(--gas)"></span> Gas</div>
-        <div class="preis-input-wrap">
-          <input class="preis-input" type="number" id="p-gas" step="0.001" placeholder="0.080">
-          <span class="preis-unit">€/m³</span>
-        </div>
-      </div>
-      <div class="preis-card">
-        <div class="preis-label"><span class="dot" style="background:var(--water)"></span> Wasser</div>
-        <div class="preis-input-wrap">
-          <input class="preis-input" type="number" id="p-water" step="0.01" placeholder="2.50">
-          <span class="preis-unit">€/m³</span>
-        </div>
-      </div>
-      <div class="preis-card">
-        <div class="preis-label"><span class="dot" style="background:var(--strom)"></span> Strom Bezug</div>
-        <div class="preis-input-wrap">
-          <input class="preis-input" type="number" id="p-strom" step="0.001" placeholder="0.32">
-          <span class="preis-unit">€/kWh</span>
-        </div>
-      </div>
-      <div class="preis-card">
-        <div class="preis-label"><span class="dot" style="background:var(--einspeisung)"></span> PV Einspeisung</div>
-        <div class="preis-input-wrap">
-          <input class="preis-input" type="number" id="p-einsp" step="0.001" placeholder="0.082">
-          <span class="preis-unit">€/kWh</span>
-        </div>
-      </div>
-    </div>
-    <button class="btn-save" onclick="savePreise()">Preise speichern</button>
-    <div id="preis-msg" style="display:none;margin-top:12px;font-size:11px;color:var(--pv);letter-spacing:1px;">✓ Gespeichert</div>
-  </div>
-
 </div>
 
-<script>
-// ── CONFIG ──
-const API = 'https://script.google.com/macros/s/AKfycbxHnKvQdihg6cz0b3RzQd1n4wY1BxmucJ9t3llaU2Iu59URvXzVRSpL8dIZzuLw89Q8GQ/exec';
+<!-- ══════════════════════ TARIFE ══════════════════════ -->
+<div class="section" id="s-preise">
+  <div class="eingabe-header" style="margin-bottom:16px"><h2>Tarife & Preise</h2></div>
 
-// ── STATE ──
+  <div class="preis-section-title">Wasser</div>
+  <div class="preise-grid">
+    <div class="preis-card">
+      <div class="preis-label"><span class="dot" style="background:var(--water)"></span> Wasser (innen)</div>
+      <div class="preis-input-wrap"><input class="preis-input" type="number" id="p-water" step="0.001" placeholder="2.50"><span class="preis-unit">€/m³</span></div>
+    </div>
+    <div class="preis-card">
+      <div class="preis-label"><span class="dot" style="background:var(--water2)"></span> Wasser (außen)</div>
+      <div class="preis-input-wrap"><input class="preis-input" type="number" id="p-water2" step="0.001" placeholder="2.50"><span class="preis-unit">€/m³</span></div>
+    </div>
+  </div>
+
+  <div class="preis-section-title">Gas</div>
+  <div class="preise-grid">
+    <div class="preis-card">
+      <div class="preis-label"><span class="dot" style="background:var(--gas)"></span> Gas Arbeitspreis</div>
+      <div class="preis-input-wrap"><input class="preis-input" type="number" id="p-gas" step="0.0001" placeholder="0.0800"><span class="preis-unit">€/m³</span></div>
+    </div>
+  </div>
+
+  <div class="preis-section-title">Strom</div>
+  <div class="preise-grid">
+    <div class="preis-card">
+      <div class="preis-label"><span class="dot" style="background:var(--strom)"></span> Strom Bezug</div>
+      <div class="preis-input-wrap"><input class="preis-input" type="number" id="p-strom" step="0.001" placeholder="0.320"><span class="preis-unit">€/kWh</span></div>
+    </div>
+    <div class="preis-card">
+      <div class="preis-label"><span class="dot" style="background:var(--pv)"></span> PV Einspeisevergütung</div>
+      <div class="preis-input-wrap"><input class="preis-input" type="number" id="p-einsp" step="0.0001" placeholder="0.0820"><span class="preis-unit">€/kWh</span></div>
+    </div>
+  </div>
+
+  <div class="preis-section-title">Vorjahresdaten (für Vergleich)</div>
+  <p style="font-size:11px;color:var(--muted);margin-bottom:16px;letter-spacing:0.5px">Diese Werte werden als gestrichelte Linie in den Diagrammen angezeigt.</p>
+  <div class="preise-grid">
+    <div class="preis-card">
+      <div class="preis-label"><span class="dot" style="background:var(--gas)"></span> Gas Vorjahr Jan–Dez (m³)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px" id="vj-gas-grid"></div>
+    </div>
+    <div class="preis-card">
+      <div class="preis-label"><span class="dot" style="background:var(--water)"></span> Wasser Vorjahr Jan–Dez (m³)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px" id="vj-water-grid"></div>
+    </div>
+    <div class="preis-card">
+      <div class="preis-label"><span class="dot" style="background:var(--strom)"></span> Strom Vorjahr Jan–Dez (kWh)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px" id="vj-strom-grid"></div>
+    </div>
+    <div class="preis-card">
+      <div class="preis-label"><span class="dot" style="background:var(--pv)"></span> PV Vorjahr Jan–Dez (kWh)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px" id="vj-pv-grid"></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" onclick="savePreise()">Tarife & Vorjahr speichern</button>
+  </div>
+  <div class="save-msg" id="preis-msg">✓ Gespeichert</div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbxHnKvQdihg6cz0b3RzQd1n4wY1BxmucJ9t3llaU2Iu59URvXzVRSpL8dIZzuLw89Q8GQ/exec';
+const MONTHS = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const MONTHS_FULL = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+// Vorjahresdaten aus deiner Excel
+const DEFAULT_VJ = {
+  gas:   [383, 236, 201, 141, 28, 22, 16, 18, 12, 155, 249, 314],
+  water: [10,  8,   10,  10,  9,  9,  7,  7,  0,  19,  9,   9  ],
+  strom: [175, 123, 88,  59,  72, 57, 137,97,  0,  279, 167, 228],
+  pv:    [63,  28,  146, 260, 529,242, 773,607, 0,  641, 94,  28 ],
+};
+
 let data = [];
-let preise = { gas: 0.08, water: 2.50, strom: 0.32, einsp: 0.082 };
+let preise = { gas: 0.08, water: 2.50, water2: 2.50, strom: 0.32, einsp: 0.082 };
+let vorjahr = { ...DEFAULT_VJ };
 let charts = {};
 
-const MONTHS = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-
-// ── API HELPERS ──
+// ── API ──
 async function apiGet(action, params = {}) {
   const url = new URL(API);
   url.searchParams.set('action', action);
   Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-  const res = await fetch(url.toString());
-  return res.json();
+  try {
+    const res = await fetch(url.toString());
+    return res.json();
+  } catch(e) { console.error(e); return null; }
 }
 
 async function apiPost(action, body) {
   const url = new URL(API);
   url.searchParams.set('action', action);
-  const res = await fetch(url.toString(), {
-    method: 'POST',
-    body: JSON.stringify(body),
-  });
-  return res.json();
+  try {
+    const res = await fetch(url.toString(), { method: 'POST', body: JSON.stringify(body) });
+    return res.json();
+  } catch(e) { console.error(e); return null; }
 }
 
-function showLoading(msg = 'Laden…') {
-  document.getElementById('loading-bar').style.display = 'block';
-  document.getElementById('loading-bar').textContent = msg;
-}
-
-function hideLoading() {
-  document.getElementById('loading-bar').style.display = 'none';
-}
+function showLoading(msg) { const b = document.getElementById('loading-bar'); b.textContent = msg; b.style.display = 'block'; }
+function hideLoading() { document.getElementById('loading-bar').style.display = 'none'; }
 
 // ── INIT ──
 async function init() {
+  buildVorjahrGrids();
   fillMonthSelect();
   fillYearSelect();
   showLoading('Daten werden geladen…');
-  try {
-    const [rawData, rawPreise] = await Promise.all([
-      apiGet('getData'),
-      apiGet('getPreise'),
-    ]);
-    data = rawData.map(d => ({
-      ...d,
-      gasStand: d.gasStand !== '' && d.gasStand != null ? +d.gasStand : null,
-      waterStand: d.waterStand !== '' && d.waterStand != null ? +d.waterStand : null,
-      stromBezug: d.stromBezug !== '' && d.stromBezug != null ? +d.stromBezug : null,
-      pvErzeugung: d.pvErzeugung !== '' && d.pvErzeugung != null ? +d.pvErzeugung : null,
-      pvEinspeisung: d.pvEinspeisung !== '' && d.pvEinspeisung != null ? +d.pvEinspeisung : null,
-    }));
-    preise = rawPreise;
-  } catch(e) {
-    console.error(e);
+  const [rawData, rawPreise] = await Promise.all([apiGet('getData'), apiGet('getPreise')]);
+  if (rawData) data = rawData.map(normalizeEntry);
+  if (rawPreise) {
+    preise = { gas: +rawPreise.gas||0.08, water: +rawPreise.water||2.50, water2: +rawPreise.water2||2.50, strom: +rawPreise.strom||0.32, einsp: +rawPreise.einsp||0.082 };
+    if (rawPreise.vorjahr) vorjahr = rawPreise.vorjahr;
   }
   hideLoading();
   loadPreise();
@@ -642,6 +466,23 @@ async function init() {
   renderAuswertung();
 }
 
+function normalizeEntry(d) {
+  return {
+    ...d,
+    temp:        d.temp        != null && d.temp        !== '' ? +d.temp        : null,
+    gasStand:    d.gasStand    != null && d.gasStand    !== '' ? +d.gasStand    : null,
+    gasAbschlag: d.gasAbschlag != null && d.gasAbschlag !== '' ? +d.gasAbschlag : null,
+    waterStand:  d.waterStand  != null && d.waterStand  !== '' ? +d.waterStand  : null,
+    waterAbschlag: d.waterAbschlag != null && d.waterAbschlag !== '' ? +d.waterAbschlag : null,
+    water2Stand: d.water2Stand != null && d.water2Stand !== '' ? +d.water2Stand : null,
+    stromStand:  d.stromStand  != null && d.stromStand  !== '' ? +d.stromStand  : null,
+    stromAbschlag: d.stromAbschlag != null && d.stromAbschlag !== '' ? +d.stromAbschlag : null,
+    pvStand:     d.pvStand     != null && d.pvStand     !== '' ? +d.pvStand     : null,
+    pvAbschlag:  d.pvAbschlag  != null && d.pvAbschlag  !== '' ? +d.pvAbschlag  : null,
+  };
+}
+
+// ── MONTH/YEAR SELECT ──
 function fillMonthSelect() {
   const sel = document.getElementById('monthSelect');
   const now = new Date();
@@ -654,7 +495,7 @@ function fillMonthSelect() {
       sel.appendChild(opt);
     }
   }
-  sel.addEventListener('change', updatePreviews);
+  sel.addEventListener('change', () => { loadExistingEntry(); updatePreviews(); });
 }
 
 function fillYearSelect() {
@@ -663,28 +504,115 @@ function fillYearSelect() {
   sel.innerHTML = '';
   for (let y = now.getFullYear(); y >= now.getFullYear() - 5; y--) {
     const opt = document.createElement('option');
-    opt.value = y;
-    opt.textContent = y;
+    opt.value = y; opt.textContent = y;
     sel.appendChild(opt);
   }
 }
 
+// ── LOAD EXISTING INTO FORM ──
+function loadExistingEntry() {
+  const month = document.getElementById('monthSelect').value;
+  const existing = data.find(d => d.month === month);
+  const fields = ['temp','gas-stand','gas-abschlag','water-stand','water-abschlag','water2-stand','strom-stand','strom-abschlag','pv-stand','pv-abschlag'];
+  const keys =   ['temp','gasStand', 'gasAbschlag', 'waterStand', 'waterAbschlag', 'water2Stand', 'stromStand', 'stromAbschlag', 'pvStand', 'pvAbschlag'];
+  fields.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.value = existing && existing[keys[i]] != null ? existing[keys[i]] : '';
+  });
+}
+
+// ── PREVIEWS ──
+function updatePreviews() {
+  const month = document.getElementById('monthSelect').value;
+  const [y, m] = month.split('-').map(Number);
+  const prevKey = m === 1 ? `${y-1}-12` : `${y}-${String(m-1).padStart(2,'0')}`;
+  const prev = data.find(d => d.month === prevKey);
+  const curr = data.find(d => d.month === month);
+
+  setP('prev-temp',   prev, 'temp',        '°C',  1);
+  setP('prev-gas',    prev, 'gasStand',    'm³',  3, prev, curr, 'gasStand');
+  setP('prev-water',  prev, 'waterStand',  'm³',  3, prev, curr, 'waterStand');
+  setP('prev-water2', prev, 'water2Stand', 'm³',  3);
+  setP('prev-strom',  prev, 'stromStand',  'kWh', 2, prev, curr, 'stromStand');
+  setP('prev-pv',     prev, 'pvStand',     'kWh', 2, prev, curr, 'pvStand');
+}
+
+function setP(id, prev, key, unit, dec, prevMonth, currMonth, diffKey) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  let html = prev && prev[key] != null ? `Stand VM: <strong>${Number(prev[key]).toFixed(dec)} ${unit}</strong>` : 'Vormonat: —';
+  if (diffKey && prevMonth && currMonth && prevMonth[diffKey] != null && currMonth && currMonth[diffKey] != null) {
+    const diff = currMonth[diffKey] - prevMonth[diffKey];
+    html += `<br>Verbrauch: <strong>${diff.toFixed(dec)} ${unit}</strong>`;
+  }
+  el.innerHTML = html;
+}
+
+// ── SAVE ──
+async function saveEntry() {
+  const month = document.getElementById('monthSelect').value;
+  const entry = {
+    month,
+    temp:         parseFloat(document.getElementById('temp-val').value)      ?? null,
+    gasStand:     parseFloat(document.getElementById('gas-stand').value)     || null,
+    gasAbschlag:  parseFloat(document.getElementById('gas-abschlag').value)  || null,
+    waterStand:   parseFloat(document.getElementById('water-stand').value)   || null,
+    waterAbschlag:parseFloat(document.getElementById('water-abschlag').value)|| null,
+    water2Stand:  parseFloat(document.getElementById('water2-stand').value)  || null,
+    stromStand:   parseFloat(document.getElementById('strom-stand').value)   || null,
+    stromAbschlag:parseFloat(document.getElementById('strom-abschlag').value)|| null,
+    pvStand:      parseFloat(document.getElementById('pv-stand').value)      || null,
+    pvAbschlag:   parseFloat(document.getElementById('pv-abschlag').value)   || null,
+  };
+  // temp can be 0
+  entry.temp = document.getElementById('temp-val').value !== '' ? parseFloat(document.getElementById('temp-val').value) : null;
+
+  showLoading('Speichern…');
+  await apiPost('saveEntry', entry);
+  const idx = data.findIndex(d => d.month === month);
+  if (idx >= 0) data[idx] = entry; else data.push(entry);
+  data.sort((a,b) => a.month.localeCompare(b.month));
+  hideLoading();
+  updatePreviews();
+  renderAuswertung();
+  const msg = document.getElementById('save-msg');
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 2500);
+}
+
+// ── PREISE ──
 function loadPreise() {
-  document.getElementById('p-gas').value = preise.gas;
+  document.getElementById('p-gas').value   = preise.gas;
   document.getElementById('p-water').value = preise.water;
+  document.getElementById('p-water2').value= preise.water2 || preise.water;
   document.getElementById('p-strom').value = preise.strom;
   document.getElementById('p-einsp').value = preise.einsp;
+  // load vorjahr
+  ['gas','water','strom','pv'].forEach(key => {
+    MONTHS.forEach((m, i) => {
+      const el = document.getElementById(`vj-${key}-${i}`);
+      if (el) el.value = vorjahr[key] ? (vorjahr[key][i] ?? '') : '';
+    });
+  });
 }
 
 async function savePreise() {
   preise = {
-    gas: parseFloat(document.getElementById('p-gas').value) || 0,
-    water: parseFloat(document.getElementById('p-water').value) || 0,
-    strom: parseFloat(document.getElementById('p-strom').value) || 0,
-    einsp: parseFloat(document.getElementById('p-einsp').value) || 0,
+    gas:    parseFloat(document.getElementById('p-gas').value)    || 0,
+    water:  parseFloat(document.getElementById('p-water').value)  || 0,
+    water2: parseFloat(document.getElementById('p-water2').value) || 0,
+    strom:  parseFloat(document.getElementById('p-strom').value)  || 0,
+    einsp:  parseFloat(document.getElementById('p-einsp').value)  || 0,
   };
-  showLoading('Preise speichern…');
-  await apiPost('savePreise', preise);
+  ['gas','water','strom','pv'].forEach(key => {
+    vorjahr[key] = MONTHS.map((_, i) => {
+      const el = document.getElementById(`vj-${key}-${i}`);
+      return el ? (parseFloat(el.value) || 0) : 0;
+    });
+  });
+  const payload = { ...preise, vorjahr };
+  showLoading('Speichern…');
+  await apiPost('savePreise', payload);
   hideLoading();
   const msg = document.getElementById('preis-msg');
   msg.style.display = 'block';
@@ -692,211 +620,188 @@ async function savePreise() {
   renderAuswertung();
 }
 
-// ── PREVIEWS ──
-function updatePreviews() {
-  const month = document.getElementById('monthSelect').value;
-  const [y, m] = month.split('-').map(Number);
-  const prevMonth = m === 1 ? `${y-1}-12` : `${y}-${String(m-1).padStart(2,'0')}`;
-  const prev = data.find(d => d.month === prevMonth);
-
-  setPreview('prev-gas', prev, 'gasStand', 'm³');
-  setPreview('prev-water', prev, 'waterStand', 'm³');
-  setPreview('prev-strom', prev, 'stromBezug', 'kWh', true);
-  setPreviewPV(prev);
-}
-
-function setPreview(id, prev, key, unit, isConsumption = false) {
-  const el = document.getElementById(id);
-  if (!prev || prev[key] == null) {
-    el.innerHTML = 'Vormonat: —';
-  } else {
-    el.innerHTML = isConsumption
-      ? `Vormonat: <strong>${Number(prev[key]).toFixed(2)} ${unit}</strong>`
-      : `Vormonat: <strong>${Number(prev[key]).toFixed(3)} ${unit}</strong>`;
-  }
-}
-
-function setPreviewPV(prev) {
-  const el = document.getElementById('prev-pv');
-  if (!prev) { el.innerHTML = 'Vormonat: —'; return; }
-  el.innerHTML = `Erzeug: <strong>${(prev.pvErzeugung||0).toFixed(1)} kWh</strong> · Einsp: <strong>${(prev.pvEinspeisung||0).toFixed(1)} kWh</strong>`;
-}
-
-// ── SAVE ENTRY ──
-async function saveEntry() {
-  const month = document.getElementById('monthSelect').value;
-  const entry = {
-    month,
-    gasStand: parseFloat(document.getElementById('gas-stand').value) || null,
-    waterStand: parseFloat(document.getElementById('water-stand').value) || null,
-    stromBezug: parseFloat(document.getElementById('strom-bezug').value) || null,
-    pvErzeugung: parseFloat(document.getElementById('pv-erzeugung').value) || null,
-    pvEinspeisung: parseFloat(document.getElementById('pv-einspeisung').value) || null,
-  };
-
-  showLoading('Speichern…');
-  await apiPost('saveEntry', entry);
-
-  // Update local cache
-  const idx = data.findIndex(d => d.month === month);
-  if (idx >= 0) data[idx] = entry;
-  else data.push(entry);
-  data.sort((a,b) => a.month.localeCompare(b.month));
-  hideLoading();
-
-  ['gas-stand','water-stand','strom-bezug','pv-erzeugung','pv-einspeisung'].forEach(id => {
-    document.getElementById(id).value = '';
+function buildVorjahrGrids() {
+  ['gas','water','strom','pv'].forEach(key => {
+    const grid = document.getElementById(`vj-${key}-grid`);
+    if (!grid) return;
+    MONTHS.forEach((m, i) => {
+      const wrap = document.createElement('div');
+      wrap.innerHTML = `<div style="font-size:8px;color:var(--muted);letter-spacing:1px;margin-bottom:2px">${m}</div>
+        <input id="vj-${key}-${i}" type="number" step="0.1" style="background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:4px 6px;width:100%;outline:none" placeholder="0">`;
+      grid.appendChild(wrap);
+    });
   });
+}
 
-  const msg = document.getElementById('save-msg');
-  msg.style.display = 'block';
-  setTimeout(() => msg.style.display = 'none', 2000);
-
-  updatePreviews();
-  renderAuswertung();
+// ── VERBRAUCH BERECHNEN ──
+function calcVerbrauch(entries, key, allData) {
+  return entries.map(d => {
+    const [y, m] = d.month.split('-').map(Number);
+    const prevKey = m === 1 ? `${y-1}-12` : `${y}-${String(m-1).padStart(2,'0')}`;
+    const prev = allData.find(x => x.month === prevKey);
+    if (prev && prev[key] != null && d[key] != null) return +(d[key] - prev[key]).toFixed(3);
+    return null;
+  });
 }
 
 // ── AUSWERTUNG ──
-function getVerbrauch(entries, key) {
-  const result = [];
-  for (let i = 1; i < entries.length; i++) {
-    const curr = entries[i][key];
-    const prev = entries[i-1][key];
-    if (curr != null && prev != null) result.push({ month: entries[i].month, val: curr - prev });
-    else result.push({ month: entries[i].month, val: null });
-  }
-  return result;
-}
-
 function renderAuswertung() {
   const year = parseInt(document.getElementById('yearSelect').value);
-  const yearData = data.filter(d => d.month.startsWith(year));
-  const allYearData = data.filter(d => d.month.startsWith(year) || d.month.startsWith(year - 1));
+  const yd = data.filter(d => d.month.startsWith(year));
+  const allData = data; // needed for prev month lookup across year boundary
 
-  renderStats(yearData, allYearData, year);
-  renderCharts(yearData, allYearData, year);
-  renderTable(yearData, allYearData);
+  const gasV   = calcVerbrauch(yd, 'gasStand',   allData);
+  const waterV = calcVerbrauch(yd, 'waterStand',  allData);
+  const stromV = calcVerbrauch(yd, 'stromStand',  allData);
+  const pvV    = calcVerbrauch(yd, 'pvStand',     allData);
+
+  renderStats(yd, gasV, waterV, stromV, pvV);
+  renderCharts(yd, gasV, waterV, stromV, pvV, year);
+  renderTable(yd, gasV, waterV, stromV, pvV, allData);
 }
 
-function renderStats(yd, ayd, year) {
+function sum(arr) { return arr.reduce((s, v) => s + (v || 0), 0); }
+
+function renderStats(yd, gasV, waterV, stromV, pvV) {
   const grid = document.getElementById('statsGrid');
-  if (yd.length < 2) { grid.innerHTML = ''; return; }
+  if (yd.length === 0) { grid.innerHTML = ''; return; }
 
-  const gasVerb = getVerbrauch(ayd.filter(d => d.month.startsWith(year)), 'gasStand').reduce((s,v) => s + (v.val||0), 0);
-  const waterVerb = getVerbrauch(ayd.filter(d => d.month.startsWith(year)), 'waterStand').reduce((s,v) => s + (v.val||0), 0);
-  const stromBezug = yd.reduce((s,d) => s + (d.stromBezug||0), 0);
-  const pvErzeug = yd.reduce((s,d) => s + (d.pvErzeugung||0), 0);
-  const pvEinsp = yd.reduce((s,d) => s + (d.pvEinspeisung||0), 0);
-  const pvEigenverbr = pvErzeug - pvEinsp;
+  const gasSum   = sum(gasV);
+  const waterSum = sum(waterV);
+  const stromSum = sum(stromV);
+  const pvSum    = sum(pvV);
 
-  const gasKosten = gasVerb * preise.gas;
-  const waterKosten = waterVerb * preise.water;
-  const stromKosten = stromBezug * preise.strom;
-  const einspeisErtrag = pvEinsp * preise.einsp;
-  const gesamtKosten = gasKosten + waterKosten + stromKosten - einspeisErtrag;
+  const gasVJSum   = sum(vorjahr.gas);
+  const waterVJSum = sum(vorjahr.water);
+  const stromVJSum = sum(vorjahr.strom);
+  const pvVJSum    = sum(vorjahr.pv);
+
+  const gasKosten   = gasSum * preise.gas;
+  const waterKosten = waterSum * preise.water;
+  const stromKosten = stromSum * preise.strom;
+  const pvErtrag    = pvSum * preise.einsp;
+  const gesamt      = gasKosten + waterKosten + stromKosten - pvErtrag;
+
+  function delta(curr, vj) {
+    if (!vj) return '';
+    const pct = ((curr - vj) / vj * 100).toFixed(0);
+    const cls = curr > vj ? 'delta-up' : 'delta-down';
+    const arrow = curr > vj ? '↑' : '↓';
+    return `<div class="stat-delta ${cls}">${arrow} ${Math.abs(pct)}% vs VJ</div>`;
+  }
 
   grid.innerHTML = `
-    <div class="stat-card"><div class="stat-val" style="color:var(--gas)">${gasVerb.toFixed(0)}</div><div class="stat-lbl">Gas m³</div><div class="stat-sub">${gasKosten.toFixed(0)} €</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--water)">${waterVerb.toFixed(1)}</div><div class="stat-lbl">Wasser m³</div><div class="stat-sub">${waterKosten.toFixed(0)} €</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:#b08e00">${stromBezug.toFixed(0)}</div><div class="stat-lbl">Strom kWh</div><div class="stat-sub">${stromKosten.toFixed(0)} €</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--pv)">${pvErzeug.toFixed(0)}</div><div class="stat-lbl">PV erzeugt</div><div class="stat-sub">${pvEigenverbr.toFixed(0)} kWh eigen</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--einspeisung)">${pvEinsp.toFixed(0)}</div><div class="stat-lbl">Einspeisung</div><div class="stat-sub">${einspeisErtrag.toFixed(0)} €</div></div>
-    <div class="stat-card"><div class="stat-val">${gesamtKosten.toFixed(0)}</div><div class="stat-lbl">Gesamtkosten</div><div class="stat-sub">inkl. Einsp.-Ertrag</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--gas)">${gasSum.toFixed(0)}</div><div class="stat-lbl">Gas m³</div><div class="stat-sub">${gasKosten.toFixed(0)} €</div>${delta(gasSum,gasVJSum)}</div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--water)">${waterSum.toFixed(1)}</div><div class="stat-lbl">Wasser m³</div><div class="stat-sub">${waterKosten.toFixed(0)} €</div>${delta(waterSum,waterVJSum)}</div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--strom)">${stromSum.toFixed(0)}</div><div class="stat-lbl">Strom kWh</div><div class="stat-sub">${stromKosten.toFixed(0)} €</div>${delta(stromSum,stromVJSum)}</div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--pv)">${pvSum.toFixed(0)}</div><div class="stat-lbl">PV kWh</div><div class="stat-sub">${pvErtrag.toFixed(0)} €</div>${delta(pvSum,pvVJSum)}</div>
+    <div class="stat-card"><div class="stat-val">${gesamt.toFixed(0)}</div><div class="stat-lbl">Gesamtkosten €</div><div class="stat-sub">inkl. Einsp.</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--temp)">${yd.length > 0 ? (sum(yd.map(d=>d.temp||0))/yd.filter(d=>d.temp!=null).length).toFixed(1) : '—'}</div><div class="stat-lbl">Ø Temperatur</div><div class="stat-sub">°C</div></div>
   `;
 }
 
-function renderCharts(yd, ayd, year) {
-  const labels = yd.map(d => MONTHS[parseInt(d.month.split('-')[1]) - 1]);
-
-  // Gas – need prev month for consumption
-  const gasVerb = [];
-  for (let i = 0; i < yd.length; i++) {
-    const prev = ayd.find(d => {
-      const [y2, m2] = d.month.split('-').map(Number);
-      const [y1, m1] = yd[i].month.split('-').map(Number);
-      return m1 === 1 ? y2 === y1-1 && m2 === 12 : y2 === y1 && m2 === m1-1;
-    });
-    gasVerb.push(prev && yd[i].gasStand != null && prev.gasStand != null ? +(yd[i].gasStand - prev.gasStand).toFixed(3) : null);
-  }
-
-  const waterVerb = [];
-  for (let i = 0; i < yd.length; i++) {
-    const prev = ayd.find(d => {
-      const [y2, m2] = d.month.split('-').map(Number);
-      const [y1, m1] = yd[i].month.split('-').map(Number);
-      return m1 === 1 ? y2 === y1-1 && m2 === 12 : y2 === y1 && m2 === m1-1;
-    });
-    waterVerb.push(prev && yd[i].waterStand != null && prev.waterStand != null ? +(yd[i].waterStand - prev.waterStand).toFixed(3) : null);
-  }
-
-  makeChart('chartGas', labels, [{label:'Gas m³', data: gasVerb, backgroundColor:'rgba(232,93,38,0.7)', borderColor:'var(--gas)', borderWidth:2}], 'bar');
-  makeChart('chartWater', labels, [{label:'Wasser m³', data: waterVerb, backgroundColor:'rgba(38,128,232,0.7)', borderColor:'var(--water)', borderWidth:2}], 'bar');
-  makeChart('chartStrom', labels, [{label:'Strom kWh', data: yd.map(d=>d.stromBezug), backgroundColor:'rgba(245,196,0,0.6)', borderColor:'#b08e00', borderWidth:2}], 'bar');
-  makeChart('chartPV', labels, [
-    {label:'Erzeugung', data: yd.map(d=>d.pvErzeugung), backgroundColor:'rgba(40,180,99,0.5)', borderColor:'var(--pv)', borderWidth:2},
-    {label:'Einspeisung', data: yd.map(d=>d.pvEinspeisung), backgroundColor:'rgba(26,122,68,0.5)', borderColor:'var(--einspeisung)', borderWidth:2},
-  ], 'bar');
-}
-
-function makeChart(id, labels, datasets, type) {
+function makeChart(id, labels, datasets, type = 'bar') {
   if (charts[id]) charts[id].destroy();
-  const ctx = document.getElementById(id).getContext('2d');
-  charts[id] = new Chart(ctx, {
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx.getContext('2d'), {
     type,
     data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: datasets.length > 1, labels: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#8a857a' } } },
+      plugins: { legend: { display: datasets.length > 1, labels: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#8a857a', boxWidth: 12 } } },
       scales: {
-        x: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#8a857a' } },
-        y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#8a857a' } },
+        x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#8a857a' } },
+        y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#8a857a' } },
       }
     }
   });
 }
 
-function renderTable(yd, ayd) {
+function renderCharts(yd, gasV, waterV, stromV, pvV, year) {
+  const labels = yd.map(d => MONTHS[parseInt(d.month.split('-')[1]) - 1]);
+  const mIdxs  = yd.map(d => parseInt(d.month.split('-')[1]) - 1);
+
+  const vjGas   = mIdxs.map(i => vorjahr.gas[i]   ?? null);
+  const vjWater = mIdxs.map(i => vorjahr.water[i]  ?? null);
+  const vjStrom = mIdxs.map(i => vorjahr.strom[i]  ?? null);
+  const vjPV    = mIdxs.map(i => vorjahr.pv[i]     ?? null);
+
+  makeChart('chartGas', labels, [
+    { label: `${year}`, data: gasV, backgroundColor: 'rgba(232,93,38,0.7)', borderColor: 'var(--gas)', borderWidth: 1 },
+    { label: 'Vorjahr', data: vjGas, type: 'line', borderColor: 'rgba(232,93,38,0.4)', borderDash: [4,4], pointRadius: 3, fill: false, tension: 0.3 },
+  ]);
+  makeChart('chartWater', labels, [
+    { label: `${year}`, data: waterV, backgroundColor: 'rgba(38,128,232,0.7)', borderColor: 'var(--water)', borderWidth: 1 },
+    { label: 'Vorjahr', data: vjWater, type: 'line', borderColor: 'rgba(38,128,232,0.4)', borderDash: [4,4], pointRadius: 3, fill: false, tension: 0.3 },
+  ]);
+  makeChart('chartStrom', labels, [
+    { label: `${year}`, data: stromV, backgroundColor: 'rgba(200,160,0,0.7)', borderColor: 'var(--strom)', borderWidth: 1 },
+    { label: 'Vorjahr', data: vjStrom, type: 'line', borderColor: 'rgba(200,160,0,0.4)', borderDash: [4,4], pointRadius: 3, fill: false, tension: 0.3 },
+  ]);
+  makeChart('chartPV', labels, [
+    { label: `${year}`, data: pvV, backgroundColor: 'rgba(40,180,99,0.7)', borderColor: 'var(--pv)', borderWidth: 1 },
+    { label: 'Vorjahr', data: vjPV, type: 'line', borderColor: 'rgba(40,180,99,0.4)', borderDash: [4,4], pointRadius: 3, fill: false, tension: 0.3 },
+  ]);
+
+  // Temperatur + Gas Kombichart
+  const temps = yd.map(d => d.temp ?? null);
+  makeChart('chartTemp', labels, [
+    { label: 'Gas m³', data: gasV, backgroundColor: 'rgba(232,93,38,0.5)', borderColor: 'var(--gas)', borderWidth: 1, yAxisID: 'y' },
+    { label: 'Temperatur °C', data: temps, type: 'line', borderColor: 'var(--temp)', backgroundColor: 'rgba(155,89,182,0.1)', fill: true, tension: 0.4, pointRadius: 4, yAxisID: 'y1' },
+  ], 'bar');
+  // Override for dual axis
+  if (charts['chartTemp']) {
+    charts['chartTemp'].options.scales.y1 = { position: 'right', grid: { drawOnChartArea: false }, ticks: { font: { family: 'IBM Plex Mono', size: 10 }, color: '#9b59b6', callback: v => v + '°C' } };
+    charts['chartTemp'].options.scales.y.ticks.callback = v => v + ' m³';
+    charts['chartTemp'].update();
+  }
+}
+
+function renderTable(yd, gasV, waterV, stromV, pvV, allData) {
   const tbody = document.getElementById('tableBody');
   const empty = document.getElementById('emptyState');
-
-  if (yd.length === 0) {
-    tbody.innerHTML = '';
-    empty.style.display = 'block';
-    return;
-  }
+  if (yd.length === 0) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
 
+  const year = parseInt(document.getElementById('yearSelect').value);
+  const mIdxs = yd.map(d => parseInt(d.month.split('-')[1]) - 1);
+
   tbody.innerHTML = yd.map((d, i) => {
-    const prev = ayd.find(x => {
-      const [y2, m2] = x.month.split('-').map(Number);
-      const [y1, m1] = d.month.split('-').map(Number);
-      return m1 === 1 ? y2 === y1-1 && m2 === 12 : y2 === y1 && m2 === m1-1;
-    });
-
-    const gasV = prev && d.gasStand != null && prev.gasStand != null ? (d.gasStand - prev.gasStand).toFixed(3) : '—';
-    const waterV = prev && d.waterStand != null && prev.waterStand != null ? (d.waterStand - prev.waterStand).toFixed(3) : '—';
-    const pvEigen = (d.pvErzeugung||0) - (d.pvEinspeisung||0);
-
-    const gasK = gasV !== '—' ? (parseFloat(gasV) * preise.gas).toFixed(2) : '—';
-    const waterK = waterV !== '—' ? (parseFloat(waterV) * preise.water).toFixed(2) : '—';
-    const stromK = d.stromBezug != null ? (d.stromBezug * preise.strom).toFixed(2) : '—';
-    const einspK = d.pvEinspeisung != null ? (d.pvEinspeisung * preise.einsp).toFixed(2) : '—';
-
+    const mi = mIdxs[i];
+    const gV = gasV[i]; const wV = waterV[i]; const sV = stromV[i]; const pV = pvV[i];
+    const gVJ = vorjahr.gas[mi]; const wVJ = vorjahr.water[mi]; const sVJ = vorjahr.strom[mi]; const pVJ = vorjahr.pv[mi];
     const [y, m] = d.month.split('-').map(Number);
+
+    const gK  = gV != null ? (gV * preise.gas).toFixed(2) : '—';
+    const wK  = wV != null ? (wV * preise.water).toFixed(2) : '—';
+    const sK  = sV != null ? (sV * preise.strom).toFixed(2) : '—';
+    const pK  = pV != null ? (pV * preise.einsp).toFixed(2) : '—';
+
+    function cmp(v, vj) {
+      if (v == null || vj == null) return '';
+      return v > vj ? 'td-up' : v < vj ? 'td-down' : '';
+    }
+
     return `<tr>
       <td><strong>${MONTHS[m-1]} ${y}</strong></td>
-      <td>${d.gasStand != null ? d.gasStand.toFixed(3) : '—'}</td>
-      <td class="td-gas">${gasV}</td>
-      <td>${gasK !== '—' ? gasK + ' €' : '—'}</td>
-      <td>${d.waterStand != null ? d.waterStand.toFixed(3) : '—'}</td>
-      <td class="td-water">${waterV}</td>
-      <td>${waterK !== '—' ? waterK + ' €' : '—'}</td>
-      <td class="td-strom">${d.stromBezug != null ? d.stromBezug.toFixed(2) : '—'}</td>
-      <td>${stromK !== '—' ? stromK + ' €' : '—'}</td>
-      <td class="td-pv">${d.pvErzeugung != null ? d.pvErzeugung.toFixed(1) : '—'}</td>
-      <td>${d.pvEinspeisung != null ? d.pvEinspeisung.toFixed(1) : '—'}</td>
-      <td>${pvEigen > 0 ? pvEigen.toFixed(1) : '—'}</td>
-      <td>${einspK !== '—' ? einspK + ' €' : '—'}</td>
+      <td>${d.temp != null ? d.temp.toFixed(1) + '°' : '—'}</td>
+      <td class="td-muted">${d.gasStand != null ? d.gasStand.toFixed(0) : '—'}</td>
+      <td class="td-gas ${cmp(gV,gVJ)}">${gV != null ? gV.toFixed(0) : '—'}</td>
+      <td class="td-prev">${gVJ ?? '—'}</td>
+      <td>${gK !== '—' ? gK + ' €' : '—'}</td>
+      <td class="td-muted">${d.waterStand != null ? d.waterStand.toFixed(0) : '—'}</td>
+      <td class="td-water ${cmp(wV,wVJ)}">${wV != null ? wV.toFixed(1) : '—'}</td>
+      <td class="td-prev">${wVJ ?? '—'}</td>
+      <td>${wK !== '—' ? wK + ' €' : '—'}</td>
+      <td class="td-muted">${d.stromStand != null ? d.stromStand.toFixed(0) : '—'}</td>
+      <td class="td-strom ${cmp(sV,sVJ)}">${sV != null ? sV.toFixed(0) : '—'}</td>
+      <td class="td-prev">${sVJ ?? '—'}</td>
+      <td>${sK !== '—' ? sK + ' €' : '—'}</td>
+      <td class="td-muted">${d.pvStand != null ? d.pvStand.toFixed(0) : '—'}</td>
+      <td class="td-pv ${cmp(pV,pVJ)}">${pV != null ? pV.toFixed(0) : '—'}</td>
+      <td class="td-prev">${pVJ ?? '—'}</td>
+      <td>${pK !== '—' ? pK + ' €' : '—'}</td>
       <td><button class="btn-delete" onclick="deleteEntry('${d.month}')">✕</button></td>
     </tr>`;
   }).join('');
@@ -913,52 +818,136 @@ async function deleteEntry(month) {
 
 // ── EXCEL EXPORT ──
 function exportExcel() {
-  const year = document.getElementById('yearSelect').value;
+  const year = parseInt(document.getElementById('yearSelect').value);
   const yd = data.filter(d => d.month.startsWith(year));
-  const ayd = data.filter(d => d.month.startsWith(year) || d.month.startsWith(parseInt(year) - 1));
+  const allData = data;
+  const gasV   = calcVerbrauch(yd, 'gasStand',  allData);
+  const waterV = calcVerbrauch(yd, 'waterStand', allData);
+  const stromV = calcVerbrauch(yd, 'stromStand', allData);
+  const pvV    = calcVerbrauch(yd, 'pvStand',    allData);
 
-  const rows = [['Monat','Gas Stand','Gas Verbrauch m³','Gas Kosten €','Wasser Stand','Wasser Verbrauch m³','Wasser Kosten €','Strom Bezug kWh','Strom Kosten €','PV Erzeugung kWh','PV Einspeisung kWh','PV Eigenverbrauch kWh','Einspeisevergütung €']];
+  const wb = XLSX.utils.book_new();
 
-  yd.forEach(d => {
-    const prev = ayd.find(x => {
-      const [y2, m2] = x.month.split('-').map(Number);
-      const [y1, m1] = d.month.split('-').map(Number);
-      return m1 === 1 ? y2 === y1-1 && m2 === 12 : y2 === y1 && m2 === m1-1;
-    });
-    const [y, m] = d.month.split('-').map(Number);
-    const gasV = prev && d.gasStand != null && prev.gasStand != null ? +(d.gasStand - prev.gasStand).toFixed(3) : '';
-    const waterV = prev && d.waterStand != null && prev.waterStand != null ? +(d.waterStand - prev.waterStand).toFixed(3) : '';
-    const pvEigen = (d.pvErzeugung||0) - (d.pvEinspeisung||0);
+  // ── Blatt 1: Übersicht ──
+  const uRows = [
+    [`Energie Verbrauchskosten Kontrolle (${year})`],
+    ['Breslauer Straße 32, 48231 Warendorf'],
+    [],
+    ['Monat','Temp °C',
+     'Gas Stand','Gas m³','Gas VJ','Gas Kosten €','Gas Abschlag €',
+     'Wasser Stand','Wasser m³','Wasser VJ','Wasser Kosten €','Wasser Abschlag €',
+     'Strom Stand','Strom kWh','Strom VJ','Strom Kosten €','Strom Abschlag €',
+     'PV Stand','PV kWh','PV VJ','Einsp. Vergütung €','PV Abschlag €']
+  ];
 
-    rows.push([
-      `${MONTHS[m-1]} ${y}`,
-      d.gasStand ?? '',
-      gasV,
-      gasV !== '' ? +(gasV * preise.gas).toFixed(2) : '',
-      d.waterStand ?? '',
-      waterV,
-      waterV !== '' ? +(waterV * preise.water).toFixed(2) : '',
-      d.stromBezug ?? '',
-      d.stromBezug != null ? +(d.stromBezug * preise.strom).toFixed(2) : '',
-      d.pvErzeugung ?? '',
-      d.pvEinspeisung ?? '',
-      pvEigen > 0 ? +pvEigen.toFixed(1) : '',
-      d.pvEinspeisung != null ? +(d.pvEinspeisung * preise.einsp).toFixed(2) : '',
+  const totals = { gas:0, gasK:0, gasA:0, water:0, waterK:0, waterA:0, strom:0, stromK:0, stromA:0, pv:0, pvK:0, pvA:0 };
+
+  yd.forEach((d, i) => {
+    const mi = parseInt(d.month.split('-')[1]) - 1;
+    const gV = gasV[i]; const wV = waterV[i]; const sV = stromV[i]; const pV = pvV[i];
+    const gK = gV != null ? +(gV * preise.gas).toFixed(2) : '';
+    const wK = wV != null ? +(wV * preise.water).toFixed(2) : '';
+    const sK = sV != null ? +(sV * preise.strom).toFixed(2) : '';
+    const pK = pV != null ? +(pV * preise.einsp).toFixed(2) : '';
+    if (gV) { totals.gas += gV; totals.gasK += gK||0; }
+    if (d.gasAbschlag) totals.gasA += d.gasAbschlag;
+    if (wV) { totals.water += wV; totals.waterK += wK||0; }
+    if (d.waterAbschlag) totals.waterA += d.waterAbschlag;
+    if (sV) { totals.strom += sV; totals.stromK += sK||0; }
+    if (d.stromAbschlag) totals.stromA += d.stromAbschlag;
+    if (pV) { totals.pv += pV; totals.pvK += pK||0; }
+    if (d.pvAbschlag) totals.pvA += d.pvAbschlag;
+
+    uRows.push([
+      MONTHS_FULL[mi],
+      d.temp ?? '',
+      d.gasStand ?? '', gV ?? '', vorjahr.gas[mi] ?? '', gK, d.gasAbschlag ?? '',
+      d.waterStand ?? '', wV ?? '', vorjahr.water[mi] ?? '', wK, d.waterAbschlag ?? '',
+      d.stromStand ?? '', sV ?? '', vorjahr.strom[mi] ?? '', sK, d.stromAbschlag ?? '',
+      d.pvStand ?? '', pV ?? '', vorjahr.pv[mi] ?? '', pK, d.pvAbschlag ?? '',
     ]);
   });
 
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, `Energie ${year}`);
+  uRows.push([]);
+  uRows.push(['GESAMT','',
+    '', totals.gas.toFixed(0), '', totals.gasK.toFixed(2), totals.gasA.toFixed(2),
+    '', totals.water.toFixed(1), '', totals.waterK.toFixed(2), totals.waterA.toFixed(2),
+    '', totals.strom.toFixed(0), '', totals.stromK.toFixed(2), totals.stromA.toFixed(2),
+    '', totals.pv.toFixed(0), '', totals.pvK.toFixed(2), totals.pvA.toFixed(2),
+  ]);
+
+  const wsU = XLSX.utils.aoa_to_sheet(uRows);
+  wsU['!cols'] = Array(22).fill({ wch: 14 });
+  XLSX.utils.book_append_sheet(wb, wsU, `Übersicht ${year}`);
+
+  // ── Blatt 2: Vorjahresvergleich ──
+  const vjRows = [
+    [`Vorjahresvergleich ${year} vs ${year-1}`],
+    [],
+    ['Monat','Gas '+year,'Gas VJ','Diff','Diff %','Wasser '+year,'Wasser VJ','Diff','Diff %','Strom '+year,'Strom VJ','Diff','Diff %','PV '+year,'PV VJ','Diff','Diff %'],
+  ];
+
+  yd.forEach((d, i) => {
+    const mi = parseInt(d.month.split('-')[1]) - 1;
+    const gV = gasV[i]; const wV = waterV[i]; const sV = stromV[i]; const pV = pvV[i];
+    function diff(v, vj) { return v != null && vj != null ? +(v - vj).toFixed(1) : ''; }
+    function pct(v, vj)  { return v != null && vj && vj > 0 ? +((v-vj)/vj*100).toFixed(1) : ''; }
+    vjRows.push([
+      MONTHS_FULL[mi],
+      gV ?? '', vorjahr.gas[mi] ?? '', diff(gV, vorjahr.gas[mi]), pct(gV, vorjahr.gas[mi]),
+      wV ?? '', vorjahr.water[mi] ?? '', diff(wV, vorjahr.water[mi]), pct(wV, vorjahr.water[mi]),
+      sV ?? '', vorjahr.strom[mi] ?? '', diff(sV, vorjahr.strom[mi]), pct(sV, vorjahr.strom[mi]),
+      pV ?? '', vorjahr.pv[mi] ?? '', diff(pV, vorjahr.pv[mi]), pct(pV, vorjahr.pv[mi]),
+    ]);
+  });
+
+  const wsVJ = XLSX.utils.aoa_to_sheet(vjRows);
+  wsVJ['!cols'] = Array(17).fill({ wch: 13 });
+  XLSX.utils.book_append_sheet(wb, wsVJ, `Vergleich ${year} vs ${year-1}`);
+
+  // ── Blatt 3: Gas Detail ──
+  buildDetailSheet(wb, 'Gas', year, yd, gasV, 'gasStand', 'gasAbschlag', 'm³', preise.gas, vorjahr.gas);
+  buildDetailSheet(wb, 'Wasser', year, yd, waterV, 'waterStand', 'waterAbschlag', 'm³', preise.water, vorjahr.water);
+  buildDetailSheet(wb, 'Strom', year, yd, stromV, 'stromStand', 'stromAbschlag', 'kWh', preise.strom, vorjahr.strom);
+  buildDetailSheet(wb, 'PV', year, yd, pvV, 'pvStand', 'pvAbschlag', 'kWh', preise.einsp, vorjahr.pv);
+
   XLSX.writeFile(wb, `Energie_${year}_Warendorf.xlsx`);
 }
 
+function buildDetailSheet(wb, name, year, yd, verbr, standKey, abschlagKey, unit, preis, vjArr) {
+  const rows = [
+    [`${name} – Detailauswertung ${year}`],
+    [],
+    ['Monat','Zählerstand','Verbrauch '+unit,'Vorjahr '+unit,'Diff','Diff %','Kosten €','Abschlag €','Diff (Abschl. - Kosten)','Temp °C'],
+  ];
+  let sumV=0, sumK=0, sumA=0;
+  yd.forEach((d, i) => {
+    const mi = parseInt(d.month.split('-')[1]) - 1;
+    const v  = verbr[i];
+    const k  = v != null ? +(v * preis).toFixed(2) : '';
+    const vj = vjArr[mi] ?? '';
+    const df = v != null && vj !== '' ? +(v - vj).toFixed(1) : '';
+    const pc = v != null && vj > 0 ? +((v-vj)/vj*100).toFixed(1) : '';
+    const a  = d[abschlagKey] ?? '';
+    const ad = k !== '' && a !== '' ? +(a - k).toFixed(2) : '';
+    if (v) sumV += v;
+    if (k) sumK += k;
+    if (a) sumA += a;
+    rows.push([MONTHS_FULL[mi], d[standKey]??'', v??'', vj, df, pc, k, a, ad, d.temp??'']);
+  });
+  rows.push([]);
+  rows.push(['GESAMT','',sumV.toFixed(1),'','','',sumK.toFixed(2),sumA.toFixed(2),+(sumA-sumK).toFixed(2),'']);
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols'] = Array(10).fill({ wch: 16 });
+  XLSX.utils.book_append_sheet(wb, ws, name);
+}
+
 // ── NAV ──
-function showSection(id) {
+function showSection(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('s-' + id).classList.add('active');
-  event.target.classList.add('active');
+  if (btn) btn.classList.add('active');
   if (id === 'auswertung') renderAuswertung();
 }
 
