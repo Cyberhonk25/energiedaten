@@ -408,7 +408,7 @@ tr:hover td { background: var(--bg); }
 </div><!-- /content -->
 
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbxHnKvQdihg6cz0b3RzQd1n4wY1BxmucJ9t3llaU2Iu59URvXzVRSpL8dIZzuLw89Q8GQ/exec';
+const API = 'https://script.google.com/macros/s/AKfycbzu6NcuL_D0sRAcs9KWQ5Q2_lhMpG52CBZESQPzlEDnLb7DaYlCe3V_WS9qv2VKoxug_w/exec';
 const MONTHS = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
 const MONTHS_FULL = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 
@@ -448,6 +448,19 @@ async function apiPost(action, body) {
 function showLoading(msg) { const b = document.getElementById('loading-bar'); b.textContent = msg; b.style.display = 'block'; }
 function hideLoading() { document.getElementById('loading-bar').style.display = 'none'; }
 
+// ── EXCEL BESTANDSDATEN ──
+const EXCEL_DATA = [
+  { month:'2024-12', temp:null, gasStand:718,  gasAbschlag:null, waterStand:148, waterAbschlag:null, water2Stand:1.217, stromStand:908,  stromAbschlag:null, pvStand:2143, pvAbschlag:null },
+  { month:'2025-01', temp:2.8,  gasStand:1054, gasAbschlag:223,  waterStand:158, waterAbschlag:22,   water2Stand:1.217, stromStand:1126, stromAbschlag:36,   pvStand:2204, pvAbschlag:35 },
+  { month:'2025-02', temp:3.4,  gasStand:1338, gasAbschlag:221,  waterStand:167, waterAbschlag:null, water2Stand:1.217, stromStand:1291, stromAbschlag:null, pvStand:2394, pvAbschlag:35 },
+  { month:'2025-03', temp:6.8,  gasStand:1522, gasAbschlag:227,  waterStand:176, waterAbschlag:null, water2Stand:1.217, stromStand:1436, stromAbschlag:null, pvStand:2886, pvAbschlag:35 },
+  { month:'2025-04', temp:null, gasStand:1600, gasAbschlag:221,  waterStand:186, waterAbschlag:null, water2Stand:1.217, stromStand:1569, stromAbschlag:null, pvStand:3454, pvAbschlag:35 },
+  { month:'2025-05', temp:null, gasStand:1629, gasAbschlag:221,  waterStand:196, waterAbschlag:null, water2Stand:1.217, stromStand:1702, stromAbschlag:null, pvStand:4095, pvAbschlag:35 },
+  { month:'2025-06', temp:null, gasStand:1646, gasAbschlag:221,  waterStand:203, waterAbschlag:null, water2Stand:1.217, stromStand:1788, stromAbschlag:null, pvStand:4659, pvAbschlag:35 },
+  { month:'2025-07', temp:null, gasStand:1663, gasAbschlag:221,  waterStand:210, waterAbschlag:null, water2Stand:1.217, stromStand:1898, stromAbschlag:null, pvStand:5100, pvAbschlag:35 },
+  { month:'2025-08', temp:null, gasStand:1678, gasAbschlag:221,  waterStand:217, waterAbschlag:null, water2Stand:1.217, stromStand:1976, stromAbschlag:null, pvStand:5714, pvAbschlag:35 },
+];
+
 // ── INIT ──
 async function init() {
   buildVorjahrGrids();
@@ -460,6 +473,18 @@ async function init() {
     preise = { gas: +rawPreise.gas||0.08, water: +rawPreise.water||2.50, water2: +rawPreise.water2||2.50, strom: +rawPreise.strom||0.32, einsp: +rawPreise.einsp||0.082 };
     if (rawPreise.vorjahr) vorjahr = rawPreise.vorjahr;
   }
+
+  // Bestandsdaten aus Excel einspielen falls Sheet noch leer
+  if (data.length === 0) {
+    showLoading('Bestandsdaten werden eingespielt…');
+    for (const entry of EXCEL_DATA) {
+      await apiPost('saveEntry', entry);
+      data.push(normalizeEntry(entry));
+    }
+    data.sort((a,b) => a.month.localeCompare(b.month));
+    await apiPost('savePreise', { ...preise, vorjahr });
+  }
+
   hideLoading();
   loadPreise();
   updatePreviews();
